@@ -67,6 +67,7 @@
       "!src/components/ui",
       "!src/components/page.tsx",
       "!src/components/section-heading.tsx",
+      "!src/components/section.tsx",
       "!src/lib/utils.ts",
       "!src/lib/color.ts"
     ]

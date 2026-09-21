@@ -4,7 +4,9 @@
 //   npm run registry:serve      # then, in another shell:
 //   npx shadcn@latest add @cubeui/card --yes
 //
-// The DOM half lives under /web; /r is the React Native one and is not what this app wants.
+// The DOM half lives under /r; the React Native one is under /r/native. That way round on
+// purpose: /r/{name}.json is the URL cubeui's existing DOM consumers already map, so cubeui-rn
+// landing on cubeui's `next` branch is a merge for them rather than a migration.
 import { createReadStream, existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join, normalize, resolve } from 'node:path';
@@ -26,4 +28,4 @@ createServer((req, res) => {
   }
   res.writeHead(200, { 'content-type': 'application/json' });
   createReadStream(file).pipe(res);
-}).listen(port, () => console.log(`cubeui-rn registry on http://localhost:${port}/web/{name}.json`));
+}).listen(port, () => console.log(`cubeui-rn registry on http://localhost:${port}/r/{name}.json`));
