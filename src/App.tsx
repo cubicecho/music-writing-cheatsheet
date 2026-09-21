@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FlowTab } from '@/components/domain/FlowTab';
 import type { ModeView } from '@/components/domain/KeyPicker';
 import { ProgressionsTab } from '@/components/domain/ProgressionsTab';
 import { ScalesTab } from '@/components/domain/ScalesTab';
@@ -33,6 +34,9 @@ export default function App() {
   // Degrees, not chords — so the sketch survives a change of key or of scale and gets reread in
   // the new one, which is the whole argument for writing progressions as degrees.
   const [custom, setCustom] = useState<ProgressionStep[]>([]);
+  // The chord map's own route, kept apart from the sketchpad's: they are two different exercises,
+  // and walking the chart should not overwrite something you built by hand next door.
+  const [route, setRoute] = useState<ProgressionStep[]>([]);
 
   const tonic = TONICS.find((candidate) => candidate.id === tonicId) ?? TONICS[0]!;
   const family = findFamily(familyId);
@@ -76,6 +80,7 @@ export default function App() {
           <TabsList>
             <TabsTrigger value="scales">Scale &amp; chords</TabsTrigger>
             <TabsTrigger value="progressions">Progressions</TabsTrigger>
+            <TabsTrigger value="map">Chord map</TabsTrigger>
           </TabsList>
 
           <TabsContent value="scales" className="mt-6">
@@ -98,6 +103,15 @@ export default function App() {
               onAppendStep={(step) => setCustom((current) => [...current, step])}
               onRemoveStep={(position) => setCustom((current) => current.filter((_, index) => index !== position))}
               onClearCustom={() => setCustom([])}
+            />
+          </TabsContent>
+          <TabsContent value="map" className="mt-6">
+            <FlowTab
+              {...shared}
+              route={route}
+              onAppendStep={(step) => setRoute((current) => [...current, step])}
+              onRemoveStep={(position) => setRoute((current) => current.filter((_, index) => index !== position))}
+              onClearRoute={() => setRoute([])}
             />
           </TabsContent>
         </Tabs>

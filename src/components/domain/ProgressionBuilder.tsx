@@ -1,5 +1,7 @@
 import { SectionHeading } from '@/components/section-heading';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X } from '@/components/ui/icons';
 import { ToggleChip } from '@/components/ui/toggle-chip';
 import type { Note, PaletteEntry, ProgressionStep, ScaleFamily } from '@/lib/music';
 import { chordPalette, realizeSteps } from '@/lib/music';
@@ -97,13 +99,10 @@ export function ProgressionBuilder({
                 label={playing ? 'Stop' : 'Play'}
                 title={`${playing ? 'Stop' : 'Play'} your progression in ${tonicLabel}`}
               />
-              <button
-                type="button"
-                onClick={onClear}
-                className="cursor-pointer rounded-md border border-border bg-background px-2 py-1 font-medium text-muted-foreground text-xs transition-colors hover:border-destructive hover:text-destructive"
-              >
+              <Button size="xs" variant="destructive-outline" onClick={onClear} title="Start again">
+                <X className="h-3 w-3" />
                 Clear
-              </button>
+              </Button>
             </>
           ) : null}
         </div>

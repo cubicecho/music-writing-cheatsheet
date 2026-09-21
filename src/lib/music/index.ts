@@ -1,4 +1,18 @@
 export { type Chord, chordOnDegree, chordsInScale, type TriadQuality } from './chords';
+export {
+  FLOW_ROLES,
+  type FlowChord,
+  type FlowMove,
+  type FlowNode,
+  flowMove,
+  flowNode,
+  type HarmonicRole,
+  harmonyFlow,
+  type MoveStrength,
+  realizeFlow,
+  type SeventhKind,
+  seventhKind,
+} from './flow';
 export { describeInterval, type Interval, type IntervalQuality } from './intervals';
 export {
   formatNote,

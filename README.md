@@ -28,6 +28,14 @@ staves — but nothing in it is instrument-specific.
   hides. Chords from outside the scale (the major V of the Andalusian cadence,
   the ♭VII of rock) are marked, and the panel says where they were borrowed
   from.
+- **A chord map**, on a third tab: the flowchart every theory book draws —
+  home, the chords that set up the pull, the pull itself, arrows between them —
+  except it is drawn in your key and you click it. Stand on a chord and its own
+  arrows light up, the chords the chart does not reach from there dim, and each
+  arrow says what it is for ("ii–V: the root falls a fourth and the 7th of one
+  chord becomes the 3rd of the next"). Walk it and you get a progression you can
+  play, with a faint arrow wherever you left the well-trodden path. Dimmed, not
+  disabled: the chart describes what is common, not what is allowed.
 - **Sound.** Click any note, chord or chord tone to hear it; play a scale from
   the root up, or a progression through in time with the chord it is on
   highlighted. Reading that a ♭VI is "brighter than you expect" is not the same
@@ -68,8 +76,8 @@ Pushing to `main` builds and publishes `dist/` to GitHub Pages
 This app is the first consumer of [cubeui-rn]'s **web** registry — the DOM half
 of the React Native component set, produced by its `rn2web` compiler. Every
 control on the page is an installed `@cubeui` item: `Select`, `Switch`,
-`Tooltip`, `ToggleChip`, `SegmentedButton`, `Card`, `Badge`, `Page`,
-`SectionHeading`. Nothing was hand-written to stand in for one.
+`Tooltip`, `ToggleChip`, `SegmentedButton`, `Card`, `Badge`, `Button`, `Page`,
+`Section`, `SectionHeading`. Nothing was hand-written to stand in for one.
 
 Components are installed from a local copy of the registry rather than from
 GitHub Pages, so the app tracks the sibling checkout:
@@ -79,9 +87,10 @@ npm run registry:serve    # serves ../cubeui-rn/public on :8731
 npx shadcn@latest add @cubeui/<item> --yes
 ```
 
-`components.json` points `@cubeui` at `http://localhost:8731/web/{name}.json`.
-Point it at `https://cubicecho.github.io/cubeui-rn/web/{name}.json` once the
-published registry is the one you want.
+`components.json` points `@cubeui` at `http://localhost:8731/r/{name}.json` —
+the web half of the registry, as it is laid out on cubeui's `next` branch; the
+React Native half is under `/r/native/`. Point it at the published registry's
+own `/r/{name}.json` once that is the one you want.
 
 See [AGENTS.md](AGENTS.md) for what the install turned up.
 

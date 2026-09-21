@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { ArrowRight } from '@/components/ui/icons';
 import type { RelatedKey, ScaleFamily, Tonic } from '@/lib/music';
 import { findTonic, formatNote, parallelKey, relativeKey } from '@/lib/music';
@@ -13,14 +14,12 @@ function Link({ related, onSelect }: { related: RelatedKey; onSelect: (tonicId: 
   if (!target) return null;
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(target.id, related.family.id)}
-      className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 py-1 font-medium text-foreground text-sm transition-colors hover:border-primary hover:bg-muted"
-    >
-      {formatNote(related.tonic)} {related.family.name.toLowerCase()}
-      <ArrowRight className="h-3 w-3 text-muted-foreground" />
-    </button>
+    <Button variant="outline" size="xs" onClick={() => onSelect(target.id, related.family.id)}>
+      {/* One string, not two and a space: Button colours a bare string child by wrapping it, and
+          three children would be three wrappers with the gap of the button's own row between. */}
+      {`${formatNote(related.tonic)} ${related.family.name.toLowerCase()}`}
+      <ArrowRight />
+    </Button>
   );
 }
 

@@ -7,10 +7,11 @@ scale, its modes, its intervals and the chords built on them. Everything is
 computed in the browser from `src/lib/music/`; there is no API, no database and
 no persistence beyond a theme preference in `localStorage`.
 
-It has a second job. It is the first consumer of **cubeui-rn's web registry**,
-so every control on the page is an installed `@cubeui` item rather than
-something hand-rolled, and the friction of installing them is worth recording
-(see *What the install turned up*).
+It has a second job. It is the first consumer of **cubeui-rn's web registry**
+— the RN-based rewrite living on cubeui's `next` branch — so every control on
+the page is an installed `@cubeui` item rather than something hand-rolled, and
+the friction of installing them is worth recording (see *What the install
+turned up*).
 
 ## Tech stack
 
@@ -31,12 +32,13 @@ music-writing-cheatsheet/
 ├── cubeui-tokens.css         # installed: @cubeui/tokens (the oklch palette)
 ├── scripts/serve-cubeui.mjs  # serves ../cubeui-rn/public on :8731
 ├── src/
-│   ├── App.tsx               # all the state + the two tabs; the tabs are uncontrolled
+│   ├── App.tsx               # all the state + the three tabs; the tabs are uncontrolled
 │   ├── index.css             # tailwind → tokens → the RN reset, in that order
 │   ├── components/
 │   │   ├── domain/           # the app's own components
 │   │   │   ├── ScalesTab.tsx          # tab 1: the scale, its modes, its chords
 │   │   │   ├── ProgressionsTab.tsx    # tab 2: the same key, read as progressions
+│   │   │   ├── FlowTab.tsx            # tab 3: the same key, read as a map you walk
 │   │   │   ├── KeyPicker.tsx          # key, scale, relative/parallel, 7ths
 │   │   │   ├── ModePicker.tsx         # the mode chips, and `modeRoot`
 │   │   │   ├── NoteStrip.tsx          # the scale as notes + steps, and IntervalBreakdown
@@ -46,12 +48,15 @@ music-writing-cheatsheet/
 │   │   │   ├── ProgressionPanel.tsx   # one progression as a row of chord blocks
 │   │   │   ├── ProgressionBuilder.tsx # the sketchpad: a chord palette + what you built
 │   │   │   ├── ChordBlock.tsx         # one chord: click to hear it, X to take it out
+│   │   │   ├── FlowChart.tsx          # the flowchart itself: chips, and the arrows between them
+│   │   │   ├── FlowRoute.tsx          # the path you walked; faint arrows where it left the chart
 │   │   │   ├── RelatedKeys.tsx        # relative/parallel keys, as links
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
 │   │   ├── ui/               # INSTALLED from @cubeui — do not edit by hand
 │   │   ├── page.tsx          # INSTALLED (@cubeui/page)
 │   │   ├── section-heading.tsx  # INSTALLED (@cubeui/section-heading)
+│   │   ├── section.tsx       # INSTALLED (@cubeui/section)
 │   │   └── ThemeToggle.tsx
 │   ├── lib/
 │   │   ├── audio.ts          # the only impure module: Web Audio
@@ -67,7 +72,7 @@ music-writing-cheatsheet/
 ## The theory core
 
 `src/lib/music/` is pure and dependency-free, and every claim it makes is
-tested. Six modules, each with one job:
+tested. Seven modules, each with one job:
 
 - **`pitch.ts`** — a note is a *letter plus an alteration*, never a number. The
   pitch class is derived from it. This is what makes F♯ major spell an E♯
@@ -93,6 +98,16 @@ tested. Six modules, each with one job:
   harmonic minor. `chordPalette` is the same idea read the other way: the
   scale's own seven chords, then whatever the other families stand on the same
   degrees that this one has not already given you, deduplicated by symbol.
+- **`flow.ts`** — the common-progressions flowchart, stored as *moves* rather
+  than as paths: each degree, what it is doing (tonic / pre-dominant /
+  dominant), and where the chart goes from it, with a line of prose per arrow.
+  That is what lets the UI answer "what usually happens after this chord" and
+  mark a progression that has wandered off. There is no single chart: half the
+  moves depend on whether the 7th degree is a leading tone or a subtonic, which
+  `seventhKind` reads off the family's own intervals (11 semitones or not)
+  rather than off a list of family ids, so a family added later gets the right
+  chart for free. The chart is deliberately *not* exhaustive — a test asserts
+  it refuses the blues its V–IV, because that is the point of the blues.
 - **`voicing.ts`** — the arithmetic half of sound: note + octave → MIDI number,
   MIDI → frequency, and a chord or scale laid out as pitches. Pure, so it is
   tested like the rest; `src/lib/audio.ts` is the thin, untested layer that
@@ -150,9 +165,13 @@ around silently — each one is a comment at the place it bites.
    imports the file. Without it a compiled `Card` is a `display: block` div and
    every `flex-1` beside it means something else. Vendored to
    `src/styles/cube-rn-reset.css`, unedited, until the registry publishes it.
-2. **`ToggleChip` only colours a string child.** Pass markup and it renders it
-   untouched — dark text on the selected (primary) background. `ModePicker`
-   passes a template string for that reason.
+2. **`ToggleChip` only colours a string child, and drops props it does not
+   know.** Pass markup and it renders it untouched — dark text on the selected
+   (primary) background, which is why `ModePicker` and `FlowChart` pass template
+   strings. The prop list being fixed also means it cannot *be* a Radix
+   `asChild` trigger: what the trigger clones onto it is thrown away, so the
+   chips in `FlowChart` are wrapped in a `<span className="inline-flex">` that
+   carries the trigger's props instead.
 3. **`ToggleChip` spreads `accessibilityLabel` onto a `<button>`**, which is a
    React unknown-prop warning on the web rather than an accessible name. Don't
    pass `aria-label` to it; name the chip with its text.
@@ -166,6 +185,38 @@ around silently — each one is a comment at the place it bites.
    directory at the project root. Both tsconfigs carry `paths` here.
 6. Tooltip and select animations want `tw-animate-css`, which no registry item
    declares. Installed as a devDependency.
+7. **The registry moved on the `next` branch.** The web half is now
+   `/r/{name}.json` and the React Native half `/r/native/{name}.json` — that way
+   round on purpose, so cubeui's existing DOM consumers keep the URL they
+   already map and the RN rewrite is a merge for them rather than a migration.
+   `components.json` and `scripts/serve-cubeui.mjs` both follow the new layout.
+   The reinstall brought `@cubeui/button` and `@cubeui/section` in, and added
+   `TooltipContent side`, `CardAction`, `SelectGroup`/`SelectLabel`/
+   `SelectSeparator` and a `textColor` on `Badge`.
+8. **The two halves had diverged, and the web one was broken.** Every
+   `SelectItem` in `registry/ui/select.web.tsx` carried `SELECT_LABEL_CLASS` and
+   `SELECT_SEPARATOR_CLASS` in its `cn(...)`, and the separator is `h-px`: every
+   dropdown row rendered one pixel tall. The native `select.tsx` was correct, so
+   nothing in cubeui-rn's own tests could see it. Fixed upstream and
+   reinstalled; a compiled component being wrong in a way the RN source is not
+   is the failure mode this app exists to catch.
+
+`FlowChart` draws its arrows by **measuring** where the chips landed — one
+`ResizeObserver`, then curves between the measured boxes — rather than by
+laying the graph out on a fixed grid. A chord's label decides its chip's width,
+so C major, F♯ harmonic minor and the 7ths switch are three different layouts
+of the same graph; measuring is what makes all three right, and the geometry is
+stamped with the labels it was taken for so a stale measurement is never drawn.
+
+Nothing on the page is a hand-rolled version of something the registry ships:
+`PlayButton`, the relative/parallel key links and both sketchpads' *Clear* are
+`@cubeui/button` with a variant, and the `<button>`s that remain are the ones
+the registry has no item for — `ChordBlock`'s chord face and its floating
+remove ×, `NoteStrip`'s note, octave and step tiles, `ChordTable`'s chord-tone
+chips. Those are data tiles rather than controls: `Button` wraps a bare string
+child and cannot be a three-line tile, and `ToggleChip` only colours a string
+child at all. Reach for a registry item first; write a `<button>` only when
+what you are making is not a control the set has.
 
 Installed files are **excluded from Biome** (`biome.json` → `files.includes`)
 so that re-running `shadcn add ... --overwrite` produces no diff. Do not

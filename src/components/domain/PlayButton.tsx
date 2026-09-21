@@ -1,6 +1,7 @@
 // Play and Square come straight from lucide-react: @cubeui/icons curates a fixed set and it has
 // no transport icons in it. See AGENTS.md.
 import { Play, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type PlayButtonProps = {
   playing?: boolean;
@@ -10,23 +11,28 @@ type PlayButtonProps = {
   title: string;
 };
 
+/**
+ * Play, and stop, for everything on the page that makes a noise.
+ *
+ * A `Button` with the transport's two states mapped onto two of its variants: filled while it is
+ * playing, because the button is also the only readout the transport has. Without a label it is
+ * squared off by hand — `size="icon"` is a 40px button, which is a control of its own rather than
+ * something that sits in a table row next to a chord.
+ */
 export function PlayButton({ playing = false, onClick, label, title }: PlayButtonProps) {
   const Icon = playing ? Square : Play;
 
   return (
-    <button
-      type="button"
+    <Button
+      size="xs"
+      variant={playing ? 'default' : 'outline'}
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 font-medium text-xs transition-colors ${
-        playing
-          ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'
-      }`}
+      className={label ? 'shrink-0' : 'w-7 shrink-0 px-0'}
     >
-      <Icon className="h-3 w-3" fill="currentColor" />
-      {label ? <span>{label}</span> : null}
-    </button>
+      <Icon fill="currentColor" />
+      {label}
+    </Button>
   );
 }
