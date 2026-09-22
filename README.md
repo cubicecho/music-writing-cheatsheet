@@ -36,6 +36,13 @@ staves — but nothing in it is instrument-specific.
   chord becomes the 3rd of the next"). Walk it and you get a progression you can
   play, with a faint arrow wherever you left the well-trodden path. Dimmed, not
   disabled: the chart describes what is common, not what is allowed.
+- **A song, under the map.** The route you walk is one section — a verse, a
+  chorus, a bridge — and you can keep as many as you like, name them from the
+  usual list, copy them, and move them up and down into an order. Play one, or
+  play the whole thing through with the chord you are on lit up as it goes.
+  Every chord is held the same length, which you set once in beats with a tempo
+  beside it, so C, C, Am, G at four beats is two bars of C and one each of Am
+  and G — a chord that stays is a chord written twice.
 - **Sound.** Click any note, chord or chord tone to hear it; play a scale from
   the root up, or a progression through in time with the chord it is on
   highlighted. Reading that a ♭VI is "brighter than you expect" is not the same

@@ -1,8 +1,10 @@
-import type { ProgressionStep, ScaleFamily, Tonic } from '@/lib/music';
+import type { ScaleFamily, Tonic } from '@/lib/music';
 import { seventhKind } from '@/lib/music';
+import type { Song } from '@/lib/song';
+import { appendStep } from '@/lib/song';
 import { FlowChart } from './FlowChart';
-import { FlowRoute } from './FlowRoute';
 import { KeyPicker } from './KeyPicker';
+import { SongPanel } from './SongPanel';
 
 type FlowTabProps = {
   tonic: Tonic;
@@ -11,10 +13,8 @@ type FlowTabProps = {
   onFamilyChange: (id: string) => void;
   seventh: boolean;
   onSeventhChange: (seventh: boolean) => void;
-  route: ProgressionStep[];
-  onAppendStep: (step: ProgressionStep) => void;
-  onRemoveStep: (position: number) => void;
-  onClearRoute: () => void;
+  song: Song;
+  onSongChange: (song: Song) => void;
 };
 
 /** What the chart's shape depends on, said once, under the chart that has that shape. */
@@ -31,6 +31,9 @@ function shapeNote(family: ScaleFamily): string {
  * made of and lets you walk your own. Same theory core, same key, same 7th-chord switch — the only
  * new idea is that a progression is a path through a graph, which is the idea the flowchart in
  * every theory book is drawing.
+ *
+ * A song is several of those paths in an order, so the panel below the chart holds slots rather
+ * than one route, and the chart aims at whichever slot you are adding to.
  */
 export function FlowTab({
   tonic,
@@ -39,12 +42,13 @@ export function FlowTab({
   onFamilyChange,
   seventh,
   onSeventhChange,
-  route,
-  onAppendStep,
-  onRemoveStep,
-  onClearRoute,
+  song,
+  onSongChange,
 }: FlowTabProps) {
-  const standing = route.length > 0 ? route[route.length - 1]!.degree : undefined;
+  // The chart stands on the last chord of the section you are adding to, since that is the chord
+  // the next click follows — with several sections open, "where you are" is a property of one.
+  const active = song.sections.find((section) => section.id === song.activeId);
+  const standing = active && active.steps.length > 0 ? active.steps[active.steps.length - 1]!.degree : undefined;
 
   return (
     <div className="flex flex-col gap-6">
@@ -65,17 +69,16 @@ export function FlowTab({
         family={family}
         seventh={seventh}
         from={standing}
-        onPick={(degree) => onAppendStep({ degree })}
+        onPick={(degree) => onSongChange(appendStep(song, { degree }))}
       />
 
-      <FlowRoute
+      <SongPanel
         tonic={tonic.note}
         tonicLabel={tonic.label}
         family={family}
         seventh={seventh}
-        steps={route}
-        onRemove={onRemoveStep}
-        onClear={onClearRoute}
+        song={song}
+        onChange={onSongChange}
       />
 
       <p className="text-muted-foreground text-sm">{shapeNote(family)}</p>

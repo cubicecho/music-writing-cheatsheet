@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { ProgressionStep } from '@/lib/music';
 import { findFamily, groupProgressions, SCALE_FAMILIES, TONICS } from '@/lib/music';
+import type { Song } from '@/lib/song';
+import { newSong } from '@/lib/song';
 
 /** Whichever progression the family leads with, so a tab is never empty on arrival. */
 const firstProgressionOf = (familyId: string) =>
@@ -34,9 +36,9 @@ export default function App() {
   // Degrees, not chords — so the sketch survives a change of key or of scale and gets reread in
   // the new one, which is the whole argument for writing progressions as degrees.
   const [custom, setCustom] = useState<ProgressionStep[]>([]);
-  // The chord map's own route, kept apart from the sketchpad's: they are two different exercises,
-  // and walking the chart should not overwrite something you built by hand next door.
-  const [route, setRoute] = useState<ProgressionStep[]>([]);
+  // The chord map's own song, kept apart from the sketchpad: they are two different exercises, and
+  // walking the chart should not overwrite something you built by hand next door.
+  const [song, setSong] = useState<Song>(newSong);
 
   const tonic = TONICS.find((candidate) => candidate.id === tonicId) ?? TONICS[0]!;
   const family = findFamily(familyId);
@@ -106,13 +108,7 @@ export default function App() {
             />
           </TabsContent>
           <TabsContent value="map" className="mt-6">
-            <FlowTab
-              {...shared}
-              route={route}
-              onAppendStep={(step) => setRoute((current) => [...current, step])}
-              onRemoveStep={(position) => setRoute((current) => current.filter((_, index) => index !== position))}
-              onClearRoute={() => setRoute([])}
-            />
+            <FlowTab {...shared} song={song} onSongChange={setSong} />
           </TabsContent>
         </Tabs>
 

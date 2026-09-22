@@ -49,7 +49,8 @@ music-writing-cheatsheet/
 │   │   │   ├── ProgressionBuilder.tsx # the sketchpad: a chord palette + what you built
 │   │   │   ├── ChordBlock.tsx         # one chord: click to hear it, X to take it out
 │   │   │   ├── FlowChart.tsx          # the flowchart itself: chips, and the arrows between them
-│   │   │   ├── FlowRoute.tsx          # the path you walked; faint arrows where it left the chart
+│   │   │   ├── FlowRoute.tsx          # one song section: the path you walked, faint arrows off-chart
+│   │   │   ├── SongPanel.tsx          # the sections in order, chord length + tempo, play the whole song
 │   │   │   ├── RelatedKeys.tsx        # relative/parallel keys, as links
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
@@ -61,6 +62,7 @@ music-writing-cheatsheet/
 │   ├── lib/
 │   │   ├── audio.ts          # the only impure module: Web Audio
 │   │   ├── music/            # the theory core and its tests
+│   │   ├── song.ts           # the chord map's song: sections, their order, beats and tempo
 │   │   ├── theme.ts
 │   │   ├── utils.ts          # INSTALLED (@cubeui/utils)
 │   │   └── color.ts          # INSTALLED (@cubeui/color)
@@ -120,6 +122,34 @@ Conventions worth keeping:
 - `mod()` from `pitch.ts`, not `%` — `%` keeps the sign of the dividend.
 - The theory core never respells for effect. C altered stacks to `Cm7♭5`, not
   `C7♯9♭5`: the second is a claim about function, and this reports notes.
+
+## The song layer
+
+`src/lib/song.ts` sits next to the theory core rather than inside it, because
+nothing in it is theory: a section's name and the order the sections play in
+are facts about *a song*, not about a key. Like the core it is pure and
+tested, and like everything else here a section stores **degrees**, so a song
+rereads itself when you change key.
+
+- A `Song` is `{ sections, activeId, beats, bpm }`. Every function takes a song
+  and returns a new one (`appendStep`, `addSection`, `duplicateSection`,
+  `moveSection`, `removeSection`, `renameSection`, …), which is why the panel
+  needs one `onChange` rather than a callback per verb — sections multiply
+  callbacks, and pure helpers are unit-testable where a `setState` closure is
+  not.
+- **One chord length for the whole song**, chosen in beats, with a tempo beside
+  it: `chordMs = 60000 / bpm * beats`. A chord that lasts two bars is that
+  chord written twice. That is the trade the feature is built on — no per-chord
+  duration means no note-length editor, and the row of chord blocks stays a
+  progression rather than becoming a score.
+- Section names come from a fixed `SECTION_LABELS` list and `sectionNames()`
+  numbers them *in running order* only where a label repeats: one chorus is
+  "Chorus", two are "Chorus 1" and "Chorus 2", and moving one renumbers both.
+- `songSteps()` flattens the sections for playback and `locateChord()` maps an
+  index in that flat list back to `{ sectionId, position }`, which is how the
+  whole song's playhead lights up the right chord in the right section. Only
+  one transport can be in charge: while the song plays, each section's own
+  play button is disabled and its highlight comes from the song.
 
 ## Sound
 
