@@ -200,14 +200,12 @@ function ChartChip({
 
   return (
     <Tooltip>
+      {/* The chip is the trigger. It takes the rest of a button's props and forwards a ref, so
+          what Radix clones onto it lands on the button a person actually hovers. */}
       <TooltipTrigger asChild>
-        {/* A span, because ToggleChip takes a fixed prop list and drops what a Radix trigger
-            clones onto it — see AGENTS.md. The span is what carries the trigger's props. */}
-        <span className="inline-flex">
-          <ToggleChip selected={current} onClick={() => onPick(node.degree)} className={className}>
-            {`${chord.numeral} · ${chord.symbol}`}
-          </ToggleChip>
-        </span>
+        <ToggleChip selected={current} onClick={() => onPick(node.degree)} className={className}>
+          {`${chord.numeral} · ${chord.symbol}`}
+        </ToggleChip>
       </TooltipTrigger>
       <TooltipContent side="bottom">
         <span className="block font-medium">

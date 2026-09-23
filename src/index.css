@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+/* One import, not three: the tokens stylesheet now pulls in `tw-animate-css` and the compiled
+   components' reset itself, which is what it knows and the app does not. */
 @import "../cubeui-tokens.css";
-@import "./styles/cube-rn-reset.css";
 
 /* The tokens stylesheet swaps the palette on a `.dark` class, which is what this variant reads. */
 @custom-variant dark (&:where(.dark, .dark *));

@@ -1,8 +1,7 @@
-import { SectionHeading } from '@/components/section-heading';
+import { OptionSelect } from '@/components/option-select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from '@/components/ui/icons';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Note, ScaleFamily } from '@/lib/music';
 import { realizeSteps } from '@/lib/music';
 import type { SectionLabel, Song } from '@/lib/song';
@@ -20,10 +19,12 @@ import {
   removeStep,
   renameSection,
   sectionNames,
+  sectionOrdinals,
   songSeconds,
   songSteps,
   TEMPO_CHOICES,
 } from '@/lib/song';
+import { Field } from './Field';
 import { FlowRoute } from './FlowRoute';
 import { PlayButton } from './PlayButton';
 import { useSequence } from './useSequence';
@@ -36,16 +37,6 @@ type SongPanelProps = {
   song: Song;
   onChange: (song: Song) => void;
 };
-
-/** The same label-over-control shape the key picker uses, so the two bars read as one kind of thing. */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <SectionHeading variant="overline">{label}</SectionHeading>
-      {children}
-    </div>
-  );
-}
 
 /**
  * A song: several routes through the chart, in the order they play.
@@ -62,6 +53,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
  */
 export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }: SongPanelProps) {
   const names = sectionNames(song.sections);
+  const ordinals = sectionOrdinals(song.sections);
   const steps = songSteps(song);
   const beatMs = chordMs(song);
   const { playing, step, toggle } = useSequence(
@@ -94,33 +86,21 @@ export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }
 
         <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <Field label="Chord length">
-            <Select value={String(song.beats)} onValueChange={(next) => onChange({ ...song, beats: Number(next) })}>
-              <SelectTrigger className="w-36">
-                <SelectValue>{beatsLabel(song.beats)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {BEAT_CHOICES.map((beats) => (
-                  <SelectItem key={beats} value={String(beats)}>
-                    {beatsLabel(beats)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <OptionSelect
+              className="w-36"
+              value={String(song.beats)}
+              onValueChange={(next) => onChange({ ...song, beats: Number(next) })}
+              options={BEAT_CHOICES.map((beats) => ({ value: String(beats), label: beatsLabel(beats) }))}
+            />
           </Field>
 
           <Field label="Tempo">
-            <Select value={String(song.bpm)} onValueChange={(next) => onChange({ ...song, bpm: Number(next) })}>
-              <SelectTrigger className="w-32">
-                <SelectValue>{song.bpm} BPM</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {TEMPO_CHOICES.map((bpm) => (
-                  <SelectItem key={bpm} value={String(bpm)}>
-                    {bpm} BPM
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <OptionSelect
+              className="w-32"
+              value={String(song.bpm)}
+              onValueChange={(next) => onChange({ ...song, bpm: Number(next) })}
+              options={TEMPO_CHOICES.map((bpm) => ({ value: String(bpm), label: `${bpm} BPM` }))}
+            />
           </Field>
 
           <p className="max-w-sm text-muted-foreground text-sm">
@@ -139,6 +119,7 @@ export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }
             seventh={seventh}
             name={names[index]!}
             label={section.label}
+            ordinal={ordinals[index]}
             steps={section.steps}
             active={section.id === song.activeId}
             beatMs={beatMs}

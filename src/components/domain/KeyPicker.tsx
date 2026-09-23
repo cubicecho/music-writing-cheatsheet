@@ -1,9 +1,9 @@
-import { SectionHeading } from '@/components/section-heading';
+import { OptionSelect } from '@/components/option-select';
 import { SegmentedButton } from '@/components/ui/segmented';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import type { ScaleFamily, Tonic } from '@/lib/music';
 import { SCALE_FAMILIES, TONICS } from '@/lib/music';
+import { Field } from './Field';
 
 export type ModeView = 'relative' | 'parallel';
 
@@ -19,15 +19,6 @@ type KeyPickerProps = {
   onSeventhChange: (seventh: boolean) => void;
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex min-w-44 flex-col gap-1.5">
-      <SectionHeading variant="overline">{label}</SectionHeading>
-      {children}
-    </div>
-  );
-}
-
 export function KeyPicker({
   tonic,
   onTonicChange,
@@ -40,38 +31,26 @@ export function KeyPicker({
 }: KeyPickerProps) {
   return (
     <div className="flex flex-wrap items-end gap-x-8 gap-y-5 rounded-lg border border-border bg-card p-4">
-      <Field label="Key">
-        <Select value={tonic.id} onValueChange={onTonicChange}>
-          <SelectTrigger className="w-28">
-            <SelectValue>{tonic.label}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {TONICS.map((candidate) => (
-              <SelectItem key={candidate.id} value={candidate.id}>
-                {candidate.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Field label="Key" className="min-w-44">
+        <OptionSelect
+          className="w-28"
+          value={tonic.id}
+          onValueChange={onTonicChange}
+          options={TONICS.map((candidate) => ({ value: candidate.id, label: candidate.label }))}
+        />
       </Field>
 
-      <Field label="Scale">
-        <Select value={family.id} onValueChange={onFamilyChange}>
-          <SelectTrigger className="w-52">
-            <SelectValue>{family.name}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {SCALE_FAMILIES.map((candidate) => (
-              <SelectItem key={candidate.id} value={candidate.id}>
-                {candidate.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Field label="Scale" className="min-w-44">
+        <OptionSelect
+          className="w-52"
+          value={family.id}
+          onValueChange={onFamilyChange}
+          options={SCALE_FAMILIES.map((candidate) => ({ value: candidate.id, label: candidate.name }))}
+        />
       </Field>
 
       {modeView && onModeViewChange ? (
-        <Field label="Show modes as">
+        <Field label="Show modes as" className="min-w-44">
           {/*
             The two ways to hear a mode, and the one control people most often wish a scale tool
             had. Relative keeps the key's notes and moves the tonic — the modes *of this key*.
@@ -89,7 +68,7 @@ export function KeyPicker({
         </Field>
       ) : null}
 
-      <Field label="Chords">
+      <Field label="Chords" className="min-w-44">
         <div className="flex h-10 items-center gap-2">
           <Switch id="sevenths" checked={seventh} onCheckedChange={onSeventhChange} />
           <label className="cursor-pointer text-foreground text-sm" htmlFor="sevenths">

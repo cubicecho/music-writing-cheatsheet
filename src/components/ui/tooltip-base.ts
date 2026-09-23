@@ -16,6 +16,8 @@ export type TooltipProps = { children: ReactNode };
 export type TooltipTriggerProps = {
   /** Hand the handlers to the single child rather than wrapping it. */
   asChild?: boolean | undefined;
+  /** The wrapper's class, when not `asChild`. */
+  className?: string | undefined;
   children: ReactNode;
 };
 

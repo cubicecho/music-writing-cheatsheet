@@ -80,35 +80,35 @@ Pushing to `main` builds and publishes `dist/` to GitHub Pages
 
 ## What this is also for
 
-This app is the first consumer of [cubeui-rn]'s **web** registry — the DOM half
+This app was the first consumer of [cubeui]'s **web** registry — the DOM half
 of the React Native component set, produced by its `rn2web` compiler. Every
-control on the page is an installed `@cubeui` item: `Select`, `Switch`,
-`Tooltip`, `ToggleChip`, `SegmentedButton`, `Card`, `Badge`, `Button`, `Page`,
-`Section`, `SectionHeading`. Nothing was hand-written to stand in for one.
+control on the page is an installed `@cubeui` item: `OptionSelect`,
+`ActionButton`, `Switch`, `Tooltip`, `ToggleChip`, `SegmentedButton`, `Card`,
+`Badge`, `Button`, `Page`, `PageHeader`, `Section`, `SectionHeading`. Nothing
+is hand-written to stand in for one.
 
-Components are installed from a local copy of the registry rather than from
-GitHub Pages, so the app tracks the sibling checkout:
+Components install from the published registry:
 
 ```sh
-npm run registry:serve    # serves ../cubeui-rn/public on :8731
 npx shadcn@latest add @cubeui/<item> --yes
 ```
 
-`components.json` points `@cubeui` at `http://localhost:8731/r/{name}.json` —
-the web half of the registry, as it is laid out on cubeui's `next` branch; the
-React Native half is under `/r/native/`. Point it at the published registry's
-own `/r/{name}.json` once that is the one you want.
+`components.json` points `@cubeui` at
+`https://cubicecho.github.io/cubeui/r/{name}.json` — the web half; the React
+Native half is under `/r/native/`. To install a change that is not published
+yet, `npm run registry:serve` serves a sibling checkout on :8731 and
+`components.json` points there for as long as it takes.
 
 See [AGENTS.md](AGENTS.md) for what the install turned up.
 
-[cubeui-rn]: https://github.com/cubicecho/cubeui-rn
+[cubeui]: https://github.com/cubicecho/cubeui
 
 ## Stack
 
 | Layer   | Technology                                  |
 | ------- | ------------------------------------------- |
 | Build   | Vite 8, TypeScript 6, React 19              |
-| UI      | cubeui-rn web registry (shadcn), Tailwind 4 |
+| UI      | cubeui web registry (shadcn), Tailwind 4    |
 | Theory  | `src/lib/music/` — no dependencies          |
 | Testing | Vitest                                      |
 | Linting | Biome                                       |

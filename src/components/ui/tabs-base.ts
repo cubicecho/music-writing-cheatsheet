@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 
 export type TabsProps = {
-  defaultValue: string;
+  /** The active tab, when the caller owns it. */
+  value?: string | undefined;
+  /** Called with the tab the user picked. */
+  onValueChange?: ((value: string) => void) | undefined;
+  /** The tab active at mount, when uncontrolled. */
+  defaultValue?: string | undefined;
   className?: string | undefined;
   children: ReactNode;
 };
@@ -13,6 +18,8 @@ export type TabsListProps = {
 
 export type TabsTriggerProps = {
   value: string;
+  /** Not selectable, and dimmed. */
+  disabled?: boolean | undefined;
   className?: string | undefined;
   children: ReactNode;
 };

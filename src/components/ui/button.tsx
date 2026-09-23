@@ -27,6 +27,11 @@ const buttonVariants = cva(
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        // shadcn's icon ladder, on this file's own heights: each square is the height of the
+        // text size it is named after, so an icon button sits flush in a row of text buttons.
+        "icon-xs": "h-7 w-7 rounded-lg [&_svg]:size-3.5",
+        "icon-sm": "h-9 w-9",
+        "icon-lg": "h-11 w-11",
       },
     },
     defaultVariants: {
@@ -52,6 +57,9 @@ const buttonTextVariants = cva("font-medium", {
       sm: "text-sm",
       lg: "text-sm",
       icon: "text-sm",
+      "icon-xs": "text-xs",
+      "icon-sm": "text-sm",
+      "icon-lg": "text-sm",
     },
     variant: {
       default: "text-primary-foreground",
@@ -66,10 +74,7 @@ const buttonTextVariants = cva("font-medium", {
   defaultVariants: { variant: "default", size: "default" },
 });
 
-export type ButtonProps = Omit<
-  React.ComponentPropsWithoutRef<"button">,
-  "children" | "className" | "style"
-> &
+export type ButtonProps = Omit<React.ComponentPropsWithoutRef<"button">, "children" | "className"> &
   VariantProps<typeof buttonVariants> & {
     // Re-declared rather than inherited: nativewind types it as
     // `className?: string`, which under `exactOptionalPropertyTypes` rejects the

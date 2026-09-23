@@ -74,8 +74,8 @@ export default function App() {
       <Page className="max-w-5xl gap-6">
         <PageHeader
           title="Music writing cheatsheet"
-          subtitle="Pick a key. The scale, its intervals, its modes, its chords and the progressions people build out of them all follow from it."
-          actions={<ThemeToggle />}
+          description="Pick a key. The scale, its intervals, its modes, its chords and the progressions people build out of them all follow from it."
+          action={<ThemeToggle />}
         />
 
         <Tabs defaultValue="scales">

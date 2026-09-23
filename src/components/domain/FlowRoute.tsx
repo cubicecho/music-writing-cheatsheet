@@ -1,7 +1,8 @@
+import { ActionButton } from '@/components/action-button';
+import { OptionSelect } from '@/components/option-select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ChevronDown, ChevronUp, Copy, Trash2, Undo2, X } from '@/components/ui/icons';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Note, ProgressionStep, ScaleFamily } from '@/lib/music';
 import { flowMove, realizeSteps } from '@/lib/music';
 import { formatClock, SECTION_LABELS, type SectionLabel } from '@/lib/song';
@@ -9,13 +10,18 @@ import { ChordBlock } from './ChordBlock';
 import { PlayButton } from './PlayButton';
 import { useSequence } from './useSequence';
 
+/** The seven kinds of section, as the menu offers them. Fixed, so it is built once. */
+const LABEL_OPTIONS = SECTION_LABELS.map((label) => ({ value: label, label }));
+
 type FlowRouteProps = {
   tonic: Note;
   family: ScaleFamily;
   seventh: boolean;
-  /** What to call it on screen — the label, numbered if the song has more than one of them. */
+  /** What to call it in prose — the label, numbered if the song has more than one of them. */
   name: string;
   label: SectionLabel;
+  /** Which one of its kind this is, when the song has more than one; drawn beside the picker. */
+  ordinal: number | undefined;
   steps: ProgressionStep[];
   /** The one the chart is pointed at: clicking a chord up there lands here. */
   active: boolean;
@@ -54,6 +60,7 @@ export function FlowRoute({
   seventh,
   name,
   label,
+  ordinal,
   steps,
   active,
   beatMs,
@@ -95,21 +102,18 @@ export function FlowRoute({
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={label} onValueChange={(next) => onLabelChange(next as SectionLabel)}>
-          {/* The trigger shows the numbered name and the menu offers the seven labels: you pick what
-              kind of section it is, and the song decides whether it is the first verse or the
-              second. */}
-          <SelectTrigger className="w-40">
-            <SelectValue>{name}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {SECTION_LABELS.map((candidate) => (
-              <SelectItem key={candidate} value={candidate}>
-                {candidate}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* You pick what kind of section it is; the song decides whether it is the first verse or
+            the second, so the number sits beside the menu rather than in it — a menu offering
+            "Verse 2" would be offering something reordering the song takes straight back. */}
+        <div className="flex items-center gap-1.5">
+          <OptionSelect
+            className="w-36"
+            value={label}
+            onValueChange={(next) => onLabelChange(next as SectionLabel)}
+            options={LABEL_OPTIONS}
+          />
+          {ordinal === undefined ? null : <Badge variant="outline">{ordinal}</Badge>}
+        </div>
 
         {active ? (
           <Badge>adding here</Badge>
@@ -132,36 +136,40 @@ export function FlowRoute({
                 playing={playing}
                 disabled={songPlaying}
                 onClick={toggle}
-                title={songPlaying ? 'The whole song is playing' : `${playing ? 'Stop' : 'Play'} ${name}`}
+                title={`${playing ? 'Stop' : 'Play'} ${name}`}
+                {...(songPlaying ? { hint: 'The whole song is playing — stop it to play one section.' } : {})}
               />
               <IconButton
                 icon={Undo2}
-                title={`Remove the last chord of ${name}`}
+                label={`Remove the last chord of ${name}`}
                 onClick={() => onRemove(chords.length - 1)}
               />
               {/* Not destructive-styled: red is for the button that takes the slot away, and a
                   section you emptied is still right there to fill again. */}
-              <IconButton icon={X} title={`Take every chord out of ${name}`} onClick={onClear} />
+              <IconButton icon={X} label={`Take every chord out of ${name}`} onClick={onClear} />
             </>
           ) : null}
-          <IconButton icon={Copy} title={`Copy ${name}`} onClick={onDuplicate} />
+          <IconButton icon={Copy} label={`Copy ${name}`} onClick={onDuplicate} />
           <IconButton
             icon={ChevronUp}
-            title={`Move ${name} earlier`}
+            label={`Move ${name} earlier`}
             onClick={() => onMove(-1)}
             disabled={!canMoveUp}
+            hint={canMoveUp ? undefined : `${name} is already first.`}
           />
           <IconButton
             icon={ChevronDown}
-            title={`Move ${name} later`}
+            label={`Move ${name} later`}
             onClick={() => onMove(1)}
             disabled={!canMoveDown}
+            hint={canMoveDown ? undefined : `${name} is already last.`}
           />
           <IconButton
             icon={Trash2}
-            title={canDelete ? `Delete ${name}` : 'A song keeps at least one section'}
+            label={`Delete ${name}`}
             onClick={onDelete}
             disabled={!canDelete}
+            hint={canDelete ? undefined : 'A song keeps at least one section.'}
             destructive
           />
         </div>
@@ -205,36 +213,41 @@ export function FlowRoute({
 }
 
 /**
- * One of the row of small square buttons a section carries.
+ * One of the row of small square buttons a section carries: this app's size for @cubeui's
+ * `ActionButton`, said once instead of at seven call sites.
  *
- * Icon-only because there are six of them and a section header is not where a song should spend
- * its width; every one carries its title as its accessible name, with the section's own name in
- * it, since "Move later" on its own means nothing when there are four of them on the page.
+ * Icon-only because there are seven of them and a section header is not where a song should
+ * spend its width; the label names the section too, since "Move later" on its own means nothing
+ * when there are four of them on the page. `ActionButton` is what makes the disabled ones worth
+ * having: it marks them `aria-disabled` rather than `disabled`, so the button that refuses to
+ * move a section still takes a hover and can say it is already first.
  */
 function IconButton({
   icon: Icon,
-  title,
+  label,
   onClick,
   disabled = false,
+  hint,
   destructive = false,
 }: {
   icon: typeof Copy;
-  title: string;
+  label: string;
   onClick: () => void;
   disabled?: boolean;
+  hint?: string | undefined;
   destructive?: boolean;
 }) {
   return (
-    <Button
+    <ActionButton
       size="xs"
       variant={destructive ? 'destructive-outline' : 'outline'}
       onClick={onClick}
       disabled={disabled}
-      title={title}
-      aria-label={title}
+      label={label}
+      {...(hint === undefined ? {} : { hint })}
       className="w-7 shrink-0 px-0"
     >
       <Icon className="h-3 w-3" />
-    </Button>
+    </ActionButton>
   );
 }

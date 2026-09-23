@@ -1,12 +1,4 @@
 /*
- * Vendored from cubeui-rn (compiled/cube-rn-reset.css).
- *
- * Every compiled cubeui component carries `cube-rn-view` / `cube-rn-text` / `cube-rn-pressable`
- * classes, and no item in the web registry ships the stylesheet that defines them — only
- * cubeui-rn's own Storybook imports it. Until the registry publishes it, a consumer has to copy
- * it, so this is that copy, unedited. Re-copy it if the upstream file changes.
- */
-/*
  * The reset a compiled component needs, and the reason the compiler cannot be only a rename.
  *
  * React Native source legitimately omits classes that the DOM then needs, because Yoga supplies

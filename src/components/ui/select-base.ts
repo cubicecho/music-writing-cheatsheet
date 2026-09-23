@@ -1,19 +1,30 @@
 import type { ReactNode } from "react";
 
 export type SelectProps = {
-  value: string;
-  onValueChange: (value: string) => void;
+  /** Controlled when passed; otherwise the select holds its own, starting at `defaultValue`. */
+  value?: string | undefined;
+  defaultValue?: string | undefined;
+  onValueChange?: ((value: string) => void) | undefined;
   disabled?: boolean | undefined;
+  /**
+   * Whether the menu is open, and being told when that changes.
+   *
+   * Uncontrolled unless `open` is passed, so `onOpenChange` on its own is a caller who wants to
+   * *know* rather than to drive — which is the case that asked for this. A list the server owns
+   * should be fetched when the menu opens rather than when the screen mounts, and the opening is
+   * the one thing only this component knows.
+   */
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   children: ReactNode;
 };
 
 /**
- * The trigger takes the wiring a bound field hands its control, and nothing else.
+ * The trigger takes the wiring a bound field hands its control.
  *
- * `option-select` was written against `ComponentProps<"button">`, which is every DOM
- * attribute — none of which a `Pressable` honours. This is the subset that means the
- * same thing on both platforms: React Native takes `id` and the `aria-*` props as
- * cross-platform props and react-native-web renders them as the DOM attributes.
+ * This is the subset that means the same thing on both platforms: React Native takes
+ * `id` and the `aria-*` props as cross-platform props. The web half's trigger is radix's,
+ * a real `<button>`, and takes every attribute one does plus shadcn's `size`.
  */
 export type SelectTriggerProps = {
   id?: string | undefined;
@@ -40,8 +51,16 @@ export type SelectContentProps = {
 
 export type SelectItemProps = {
   value: string;
+  /** Shown, and skipped: it cannot be chosen. */
+  disabled?: boolean | undefined;
   className?: string | undefined;
   children: ReactNode;
+};
+
+/** `SelectScrollUpButton` and `SelectScrollDownButton`. Web only in effect: see above. */
+export type SelectScrollButtonProps = {
+  className?: string | undefined;
+  children?: ReactNode;
 };
 
 export type SelectGroupProps = {

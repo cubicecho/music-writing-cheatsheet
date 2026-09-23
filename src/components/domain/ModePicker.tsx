@@ -22,9 +22,6 @@ export function ModePicker({ family, tonic, modeView, selected, onToggle }: Mode
     <div className="flex flex-wrap gap-2">
       {family.modes.map((mode: Mode, index: number) => (
         <ToggleChip key={mode.id} selected={selected.includes(mode.id)} onClick={() => onToggle(mode.id)} size="sm">
-          {/* A bare string, not markup: ToggleChip only applies the selected-state text colour to
-              a string child, and anything else it renders untouched — and unreadable on the
-              selected background. */}
           {`${mode.degree} · ${formatNote(modeRoot(tonic, family, index, modeView))} ${mode.name}`}
         </ToggleChip>
       ))}

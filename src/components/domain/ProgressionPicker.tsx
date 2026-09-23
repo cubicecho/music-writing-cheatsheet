@@ -42,7 +42,6 @@ function Group({
             onClick={() => onToggle(progression.id)}
             size="sm"
           >
-            {/* A bare string: ToggleChip only colours a string child for the selected state. */}
             {`${progression.name} · ${preview(tonic, family, progression)}`}
           </ToggleChip>
         ))}

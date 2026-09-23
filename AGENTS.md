@@ -7,18 +7,18 @@ scale, its modes, its intervals and the chords built on them. Everything is
 computed in the browser from `src/lib/music/`; there is no API, no database and
 no persistence beyond a theme preference in `localStorage`.
 
-It has a second job. It is the first consumer of **cubeui-rn's web registry**
-— the RN-based rewrite living on cubeui's `next` branch — so every control on
-the page is an installed `@cubeui` item rather than something hand-rolled, and
-the friction of installing them is worth recording (see *What the install
-turned up*).
+It has a second job. It was the first consumer of **cubeui's web registry** —
+the RN-based rewrite, which has since landed on `main` and is published at
+https://cubicecho.github.io/cubeui/r/ — so every control on the page is an
+installed `@cubeui` item rather than something hand-rolled, and the friction of
+installing them is worth recording (see *What the install turned up*).
 
 ## Tech stack
 
 | Layer    | Technology                                          |
 | -------- | --------------------------------------------------- |
 | Build    | Vite 8, TypeScript 6 (strict), React 19             |
-| UI       | cubeui-rn web registry via shadcn, Tailwind CSS 4   |
+| UI       | cubeui web registry via shadcn, Tailwind CSS 4      |
 | Theory   | `src/lib/music/` — plain TypeScript, no dependencies |
 | Testing  | Vitest (node environment; the theory core is pure)  |
 | Linting  | Biome (formatter + linter)                          |
@@ -28,9 +28,10 @@ turned up*).
 
 ```
 music-writing-cheatsheet/
-├── components.json           # shadcn config; @cubeui → the local registry server
+├── components.json           # shadcn config; @cubeui → the published registry
 ├── cubeui-tokens.css         # installed: @cubeui/tokens (the oklch palette)
-├── scripts/serve-cubeui.mjs  # serves ../cubeui-rn/public on :8731
+├── cubeui-reset.css          # installed: @cubeui/tokens (imports itself from the tokens)
+├── scripts/serve-cubeui.mjs  # serves ../cubeui/public on :8731, for unpublished changes
 ├── src/
 │   ├── App.tsx               # all the state + the three tabs; the tabs are uncontrolled
 │   ├── index.css             # tailwind → tokens → the RN reset, in that order
@@ -40,6 +41,7 @@ music-writing-cheatsheet/
 │   │   │   ├── ProgressionsTab.tsx    # tab 2: the same key, read as progressions
 │   │   │   ├── FlowTab.tsx            # tab 3: the same key, read as a map you walk
 │   │   │   ├── KeyPicker.tsx          # key, scale, relative/parallel, 7ths
+│   │   │   ├── Field.tsx              # an overline label over a control, for both settings bars
 │   │   │   ├── ModePicker.tsx         # the mode chips, and `modeRoot`
 │   │   │   ├── NoteStrip.tsx          # the scale as notes + steps, and IntervalBreakdown
 │   │   │   ├── ChordTable.tsx         # one row per degree
@@ -55,7 +57,10 @@ music-writing-cheatsheet/
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
 │   │   ├── ui/               # INSTALLED from @cubeui — do not edit by hand
+│   │   ├── action-button.tsx # INSTALLED (@cubeui/action-button)
+│   │   ├── option-select.tsx # INSTALLED (@cubeui/option-select)
 │   │   ├── page.tsx          # INSTALLED (@cubeui/page)
+│   │   ├── page-header.tsx   # INSTALLED (@cubeui/page-header)
 │   │   ├── section-heading.tsx  # INSTALLED (@cubeui/section-heading)
 │   │   ├── section.tsx       # INSTALLED (@cubeui/section)
 │   │   └── ThemeToggle.tsx
@@ -66,8 +71,6 @@ music-writing-cheatsheet/
 │   │   ├── theme.ts
 │   │   ├── utils.ts          # INSTALLED (@cubeui/utils)
 │   │   └── color.ts          # INSTALLED (@cubeui/color)
-│   └── styles/
-│       └── cube-rn-reset.css # VENDORED from cubeui-rn — see below
 └── AGENTS.md
 ```
 
@@ -142,9 +145,12 @@ rereads itself when you change key.
   chord written twice. That is the trade the feature is built on — no per-chord
   duration means no note-length editor, and the row of chord blocks stays a
   progression rather than becoming a score.
-- Section names come from a fixed `SECTION_LABELS` list and `sectionNames()`
+- Section names come from a fixed `SECTION_LABELS` list and `sectionOrdinals()`
   numbers them *in running order* only where a label repeats: one chorus is
   "Chorus", two are "Chorus 1" and "Chorus 2", and moving one renumbers both.
+  The number comes back on its own because the UI needs it both ways — the
+  picker draws the label and the number apart, while every button that acts on
+  a section has to name it in prose, which is what `sectionNames()` is for.
 - `songSteps()` flattens the sections for playback and `locateChord()` maps an
   index in that flat list back to `{ sectionId, position }`, which is how the
   whole song's playhead lights up the right chord in the right section. Only
@@ -186,50 +192,83 @@ row in the array.
 
 ## What the install turned up
 
-Findings from being cubeui-rn's first DOM consumer. None of them is worked
-around silently — each one is a comment at the place it bites.
+Findings from being cubeui's first DOM consumer. Every one of them was filed
+upstream and **every one is fixed** (cubicecho/cubeui issues #47–#55), so this
+list is now history rather than a set of workarounds — kept because it says
+what this app is for, and because the fix is the thing to reinstall rather than
+to re-derive.
 
-1. **The web registry does not ship `cube-rn-reset.css`.** Every compiled
-   component carries `cube-rn-view` / `cube-rn-text` / `cube-rn-pressable`
-   classes and no registry item defines them; only cubeui-rn's own Storybook
-   imports the file. Without it a compiled `Card` is a `display: block` div and
-   every `flex-1` beside it means something else. Vendored to
-   `src/styles/cube-rn-reset.css`, unedited, until the registry publishes it.
-2. **`ToggleChip` only colours a string child, and drops props it does not
-   know.** Pass markup and it renders it untouched — dark text on the selected
-   (primary) background, which is why `ModePicker` and `FlowChart` pass template
-   strings. The prop list being fixed also means it cannot *be* a Radix
-   `asChild` trigger: what the trigger clones onto it is thrown away, so the
-   chips in `FlowChart` are wrapped in a `<span className="inline-flex">` that
-   carries the trigger's props instead.
-3. **`ToggleChip` spreads `accessibilityLabel` onto a `<button>`**, which is a
-   React unknown-prop warning on the web rather than an accessible name. Don't
-   pass `aria-label` to it; name the chip with its text.
-4. **The `@cubeui/icons` barrel is a fixed set.** It has no light/dark glyph,
-   so `ThemeToggle` is text, and no transport glyphs, so `PlayButton` imports
-   `Play` and `Square` from `lucide-react` directly. Prefer the barrel when it
-   has the icon — `ChordBlock` takes its `X` and `RelatedKeys` its `ArrowRight`
-   from there — and reach past it only for what the barrel does not carry.
-5. **shadcn reads `paths` from the root `tsconfig.json`**, not from
+1. **The web registry shipped no `cube-rn-reset.css`** (#47), so a compiled
+   `Card` was a `display: block` div. It was vendored here for a while. Now
+   `@cubeui/tokens` installs `cubeui-reset.css` beside the palette and imports
+   it — along with `tw-animate-css` (#52, finding 6) — so `src/index.css` has
+   one import where it had three, and the vendored copy is gone.
+2. **`ToggleChip` had a closed prop list and no ref** (#49), so it could not be
+   a Radix `asChild` trigger: the chart's chips were wrapped in a `<span>` that
+   carried the trigger's props. It now takes the rest of a button's props and
+   forwards a ref, and `FlowChart` hands the trigger the chip itself.
+3. **A selected `ToggleChip` only coloured a string child** (#51), which is why
+   the chips here pass template strings. Fixed — the selected colour is on the
+   container now, so markup inside a chip is legible too. The strings stayed,
+   because a chip's label here *is* a string.
+4. **`accessibilityLabel` reached the DOM as an unknown prop** (#50). The chips
+   are still named by their text, which is what a chip should be named by.
+5. **The `@cubeui/icons` barrel was a fixed set with no transport or
+   light/dark glyphs** (#53), so `PlayButton` imported `Play` and `Square` from
+   `lucide-react`. The barrel now carries `Play`, `Pause`, `Square`, `Sun` and
+   `Moon`, and nothing in `src/` imports `lucide-react` directly any more. Take
+   icons from `@/components/ui/icons`; reach past it only for what it does not
+   carry.
+6. **shadcn reads `paths` from the root `tsconfig.json`** (#54), not from
    `tsconfig.app.json`. Without it there, `shadcn add` writes a literal `@/`
    directory at the project root. Both tsconfigs carry `paths` here.
-6. Tooltip and select animations want `tw-animate-css`, which no registry item
-   declares. Installed as a devDependency.
-7. **The registry moved on the `next` branch.** The web half is now
-   `/r/{name}.json` and the React Native half `/r/native/{name}.json` — that way
-   round on purpose, so cubeui's existing DOM consumers keep the URL they
-   already map and the RN rewrite is a merge for them rather than a migration.
-   `components.json` and `scripts/serve-cubeui.mjs` both follow the new layout.
-   The reinstall brought `@cubeui/button` and `@cubeui/section` in, and added
-   `TooltipContent side`, `CardAction`, `SelectGroup`/`SelectLabel`/
-   `SelectSeparator` and a `textColor` on `Badge`.
-8. **The two halves had diverged, and the web one was broken.** Every
-   `SelectItem` in `registry/ui/select.web.tsx` carried `SELECT_LABEL_CLASS` and
-   `SELECT_SEPARATOR_CLASS` in its `cn(...)`, and the separator is `h-px`: every
-   dropdown row rendered one pixel tall. The native `select.tsx` was correct, so
-   nothing in cubeui-rn's own tests could see it. Fixed upstream and
-   reinstalled; a compiled component being wrong in a way the RN source is not
-   is the failure mode this app exists to catch.
+7. **The compiled web half had diverged from the RN source and was broken**
+   (#48): every `SelectItem` carried the separator's `h-px`, so every dropdown
+   row rendered one pixel tall. The native file was correct, so nothing in
+   cubeui's own tests could see it — a compiled component being wrong in a way
+   its source is not is the failure mode this app exists to catch. Fixed, and
+   the registry now renders its compiled output in Storybook.
+8. **Nothing said an item was web-only** (#55), so a consumer could not tell a
+   shell that compiles for both platforms from one that never will.
+
+Two things from that list are worth knowing as *rules* rather than as history:
+a registry item is installed, not edited, and the theme toggle is still this
+app's own. `ThemeToggle` and `src/lib/theme.ts` are hand-written because the
+registry has no light/dark/system control yet — that is cubicecho/cubeui #77,
+the one finding still open. When it lands, this is the file to delete.
+
+### The September 2026 reinstall
+
+`components.json` now points at the published registry rather than at a local
+server, and every item was reinstalled from it. What changed in this app:
+
+- `PageHeader` moved into `@cubeui/page-header` and renamed its props on the
+  way: `subtitle` → `description`, `actions` → `action`, and the heading is an
+  `h1`.
+- `@cubeui/action-button` replaced the hand-rolled icon buttons. It is worth
+  the install for one behaviour: it marks a disabled button `aria-disabled`
+  instead of `disabled`, so the control keeps its hover, its focus and its
+  tooltip. Every explanation on this page that only a disabled button could
+  give — *already first*, *a song keeps at least one section*, *the whole song
+  is playing* — was written in a `title` the browser would not show, because
+  `disabled` kills the pointer events that would have shown it.
+- `@cubeui/option-select` replaced the seven-primitive `Select` assembly at
+  every call site, and there is now no hand-assembled select left. `FlowRoute`'s
+  section picker was the one holdout: its trigger showed the numbered name
+  ("Chorus 2") while its value was the bare label, which `OptionSelect` cannot
+  do — it renders the selected option's own label. The fix was to stop asking
+  it to. The number is the *song's* and not the writer's, so `sectionOrdinals`
+  hands it over on its own and it is drawn in a badge beside the menu, leaving
+  the menu to offer the seven labels and nothing else. A menu offering "Verse 2"
+  was always offering something reordering the song takes straight back.
+- Tooltips open immediately: the provider's `delayDuration` now defaults to
+  shadcn's 0 rather than Radix's 700ms.
+
+One thing the install does that is worth undoing: `shadcn add` rewrites
+`@types/react-dom` to the range the registry item declares (`~19.2.0`), which
+caps the DOM types a minor behind `@types/react` and quietly downgrades them.
+Put the caret range back in `package.json` and `npm update @types/react-dom`
+after an install, so the two type packages stay on the same minor.
 
 `FlowChart` draws its arrows by **measuring** where the chips landed — one
 `ResizeObserver`, then curves between the measured boxes — rather than by
@@ -239,19 +278,19 @@ of the same graph; measuring is what makes all three right, and the geometry is
 stamped with the labels it was taken for so a stale measurement is never drawn.
 
 Nothing on the page is a hand-rolled version of something the registry ships:
-`PlayButton`, the relative/parallel key links and both sketchpads' *Clear* are
-`@cubeui/button` with a variant, and the `<button>`s that remain are the ones
-the registry has no item for — `ChordBlock`'s chord face and its floating
-remove ×, `NoteStrip`'s note, octave and step tiles, `ChordTable`'s chord-tone
-chips. Those are data tiles rather than controls: `Button` wraps a bare string
-child and cannot be a three-line tile, and `ToggleChip` only colours a string
-child at all. Reach for a registry item first; write a `<button>` only when
-what you are making is not a control the set has.
+`PlayButton` and `FlowRoute`'s icon row are `@cubeui/action-button`, the
+relative/parallel key links and both sketchpads' *Clear* are `@cubeui/button`
+with a variant, and the `<button>`s that remain are the ones the registry has
+no item for — `ChordBlock`'s chord face and its floating remove ×,
+`NoteStrip`'s note, octave and step tiles, `ChordTable`'s chord-tone chips.
+Those are data tiles rather than controls, and `Button` wraps a bare string
+child and cannot be a three-line tile. Reach for a registry item first; write a
+`<button>` only when what you are making is not a control the set has.
 
 Installed files are **excluded from Biome** (`biome.json` → `files.includes`)
 so that re-running `shadcn add ... --overwrite` produces no diff. Do not
-reformat them, and do not edit them: change them upstream in cubeui-rn and
-reinstall.
+reformat them, and do not edit them: change them upstream in cubeui and
+reinstall. A new item means a new line in that ignore list.
 
 ## Working on it
 
@@ -260,11 +299,12 @@ npm run dev        # :3000, bound to 0.0.0.0 so other devices on the LAN can rea
 npm run check      # biome + tsc + vitest, the one to run before finishing
 npm run test
 npm run build
-npm run registry:serve   # ../cubeui-rn/public on :8731, for `shadcn add`
+npm run registry:serve   # ../cubeui/public on :8731, for an unpublished item
 ```
 
-`CUBEUI_RN_PATH` overrides where the registry server looks for the sibling
-checkout.
+`CUBEUI_PATH` overrides where that server looks for the sibling checkout. The
+ordinary install path is the published registry, which `components.json`
+already points at — the server is only for trying a change before it ships.
 
 CI runs `npm run check` and a build on every push and PR; a push to `main` also
 publishes `dist/` to GitHub Pages behind the same check. The Vite `base` is

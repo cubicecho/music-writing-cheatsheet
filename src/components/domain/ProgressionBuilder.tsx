@@ -47,7 +47,6 @@ function Palette({
             onClick={() => onAppend(entry.step)}
             size="sm"
           >
-            {/* A bare string: ToggleChip only colours a string child for the selected state. */}
             {`${entry.chord.numeral} · ${entry.chord.symbol}`}
           </ToggleChip>
         ))}

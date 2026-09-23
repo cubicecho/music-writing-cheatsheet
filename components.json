@@ -19,6 +19,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@cubeui": "http://localhost:8731/r/{name}.json"
+    "@cubeui": "https://cubicecho.github.io/cubeui/r/{name}.json"
   }
 }

@@ -68,22 +68,37 @@ export function newSong(): Song {
 }
 
 /**
- * What to call each section on screen.
+ * Which one of its kind each section is: 2 for the second verse, `undefined` for the only bridge.
  *
  * A label that appears once is left alone — a song has one bridge and calling it "Bridge 1" is
  * noise. A label used more than once is numbered in running order, which is how people refer to
  * them out loud: second verse, not the verse after the chorus.
+ *
+ * The number is the song's and not the writer's, which is why it is computed here rather than
+ * stored on a section: moving the second verse above the first renames both, and the number is
+ * therefore not something a label picker could ever offer.
  */
-export function sectionNames(sections: readonly SongSection[]): string[] {
+export function sectionOrdinals(sections: readonly SongSection[]): (number | undefined)[] {
   const total = new Map<string, number>();
   for (const section of sections) total.set(section.label, (total.get(section.label) ?? 0) + 1);
 
   const seen = new Map<string, number>();
   return sections.map((section) => {
-    if ((total.get(section.label) ?? 0) < 2) return section.label;
+    if ((total.get(section.label) ?? 0) < 2) return undefined;
     const ordinal = (seen.get(section.label) ?? 0) + 1;
     seen.set(section.label, ordinal);
-    return `${section.label} ${ordinal}`;
+    return ordinal;
+  });
+}
+
+/**
+ * The same thing as one string — what a section is called when it has to be named in prose,
+ * as every button that acts on one has to name it ("Move Chorus 2 earlier").
+ */
+export function sectionNames(sections: readonly SongSection[]): string[] {
+  return sectionOrdinals(sections).map((ordinal, index) => {
+    const { label } = sections[index]!;
+    return ordinal === undefined ? label : `${label} ${ordinal}`;
   });
 }
 

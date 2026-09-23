@@ -1,10 +1,12 @@
 export type SwitchProps = {
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
+  checked?: boolean | undefined;
+  /** Where an uncontrolled switch starts. Ignored once `checked` is passed. */
+  defaultChecked?: boolean | undefined;
+  onCheckedChange?: ((checked: boolean) => void) | undefined;
   /** Web only: what a `<label htmlFor>` points at. */
   id?: string | undefined;
   disabled?: boolean | undefined;
-  /** See `checkbox.tsx`: a bound field marks itself touched from this. */
+  /** See `checkbox-base.ts`: a bound field marks itself touched from this. */
   onBlur?: (() => void) | undefined;
   className?: string | undefined;
 };

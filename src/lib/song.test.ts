@@ -16,6 +16,7 @@ import {
   type SectionLabel,
   type Song,
   sectionNames,
+  sectionOrdinals,
   songSeconds,
   songSteps,
 } from './song';
@@ -70,6 +71,11 @@ describe('what a section is called', () => {
     const song = songOf(['Verse', [0]], ['Chorus', [3]], ['Verse', [4]]);
     const moved = moveSection(song, song.sections[2]!.id, -1);
     expect(sectionNames(moved.sections)).toEqual(['Verse 1', 'Verse 2', 'Chorus']);
+  });
+
+  it('hands out the number on its own, for a picker that shows the label and the number apart', () => {
+    const song = songOf(['Verse', []], ['Chorus', []], ['Verse', []], ['Bridge', []]);
+    expect(sectionOrdinals(song.sections)).toEqual([1, undefined, 2, undefined]);
   });
 });
 
