@@ -68,18 +68,24 @@ export function KeyPicker({
             Parallel keeps the tonic and changes the notes, which is the comparison that shows what
             a mode actually does to a sound.
           */}
-          <div className="flex h-10 items-center gap-1 rounded-md border border-border bg-background p-1">
+          {/* Named by hand until @cubeui/segmented has a group of its own (cubicecho/cubeui#105). */}
+          <fieldset
+            aria-label="Show modes as"
+            className="flex h-10 items-center gap-1 rounded-md border border-border bg-background p-1"
+          >
             <SegmentedButton active={modeView === 'relative'} onClick={() => onModeViewChange('relative')}>
               Relative
             </SegmentedButton>
             <SegmentedButton active={modeView === 'parallel'} onClick={() => onModeViewChange('parallel')}>
               Parallel
             </SegmentedButton>
-          </div>
+          </fieldset>
         </Field>
       ) : null}
 
       <Field label="Chords" className="min-w-44">
+        {/* Not `@cubeui/switch-field` yet: on the web its caption toggles twice and does nothing
+            (cubicecho/cubeui#104). Swap it in once that is fixed. */}
         <div className="flex h-10 items-center gap-2">
           <Switch id="sevenths" checked={seventh} onCheckedChange={onSeventhChange} />
           <label className="cursor-pointer text-foreground text-sm" htmlFor="sevenths">
