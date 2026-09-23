@@ -1,8 +1,9 @@
 import type { ScaleFamily, Tonic } from '@/lib/music';
-import { seventhKind } from '@/lib/music';
+import { harmonicHome, seventhKind } from '@/lib/music';
 import type { Song } from '@/lib/song';
 import { appendStep } from '@/lib/song';
 import { FlowChart } from './FlowChart';
+import { HomeKeyNote } from './HomeKeyNote';
 import { KeyPicker } from './KeyPicker';
 import { SongPanel } from './SongPanel';
 
@@ -47,6 +48,8 @@ export function FlowTab({
 }: FlowTabProps) {
   // The chart stands on the last chord of the section you are adding to, since that is the chord
   // the next click follows — with several sections open, "where you are" is a property of one.
+  // A pentatonic or blues scale is charted as the key it is played in; the picker keeps showing it.
+  const home = harmonicHome(family);
   const active = song.sections.find((section) => section.id === song.activeId);
   const standing = active && active.steps.length > 0 ? active.steps[active.steps.length - 1]!.degree : undefined;
 
@@ -63,10 +66,12 @@ export function FlowTab({
         onSeventhChange={onSeventhChange}
       />
 
+      <HomeKeyNote tonic={tonic} family={family} />
+
       <FlowChart
         tonic={tonic.note}
         tonicLabel={tonic.label}
-        family={family}
+        family={home}
         seventh={seventh}
         from={standing}
         onPick={(degree) => onSongChange(appendStep(song, { degree }))}
@@ -75,13 +80,13 @@ export function FlowTab({
       <SongPanel
         tonic={tonic.note}
         tonicLabel={tonic.label}
-        family={family}
+        family={home}
         seventh={seventh}
         song={song}
         onChange={onSongChange}
       />
 
-      <p className="text-muted-foreground text-sm">{shapeNote(family)}</p>
+      <p className="text-muted-foreground text-sm">{shapeNote(home)}</p>
     </div>
   );
 }

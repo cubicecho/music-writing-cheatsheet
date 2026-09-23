@@ -1,4 +1,4 @@
-export { type Chord, chordOnDegree, chordsInScale, type TriadQuality } from './chords';
+export { type Chord, chordOnDegree, chordsForFamily, chordsInScale, type TriadQuality } from './chords';
 export {
   FLOW_ROLES,
   type FlowChord,
@@ -40,13 +40,21 @@ export {
 export {
   buildMode,
   buildScale,
+  degreeNote,
+  familyScale,
   findFamily,
+  GAPPED_FAMILIES,
+  type HarmonyChord,
+  harmonicHome,
+  isGapped,
+  letterSteps,
   type Mode,
   parallelKey,
   type RelatedKey,
   relativeKey,
   relativeMode,
   rotateIntervals,
+  rotateLetters,
   SCALE_FAMILIES,
   type Scale,
   type ScaleDegree,

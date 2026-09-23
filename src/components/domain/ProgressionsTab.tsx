@@ -1,5 +1,6 @@
 import type { ProgressionStep, ScaleFamily, Tonic } from '@/lib/music';
-import { PROGRESSIONS } from '@/lib/music';
+import { harmonicHome, PROGRESSIONS } from '@/lib/music';
+import { HomeKeyNote } from './HomeKeyNote';
 import { KeyPicker } from './KeyPicker';
 import { ProgressionBuilder } from './ProgressionBuilder';
 import { ProgressionPanel } from './ProgressionPanel';
@@ -35,6 +36,8 @@ export function ProgressionsTab({
   onRemoveStep,
   onClearCustom,
 }: ProgressionsTabProps) {
+  // A pentatonic or blues scale is read as the key it is played in; the picker keeps showing it.
+  const home = harmonicHome(family);
   const shown = PROGRESSIONS.filter((progression) => openProgressions.includes(progression.id));
 
   return (
@@ -49,12 +52,9 @@ export function ProgressionsTab({
         onSeventhChange={onSeventhChange}
       />
 
-      <ProgressionPicker
-        tonic={tonic.note}
-        family={family}
-        selected={openProgressions}
-        onToggle={onToggleProgression}
-      />
+      <HomeKeyNote tonic={tonic} family={family} />
+
+      <ProgressionPicker tonic={tonic.note} family={home} selected={openProgressions} onToggle={onToggleProgression} />
 
       {shown.length === 0 ? (
         <p className="text-muted-foreground text-sm">Pick a progression above to see it in {tonic.label}.</p>
@@ -66,16 +66,16 @@ export function ProgressionsTab({
           progression={progression}
           tonic={tonic.note}
           tonicLabel={tonic.label}
-          family={family}
+          family={home}
           seventh={seventh}
-          native={progression.families.includes(family.id)}
+          native={progression.families.includes(home.id)}
         />
       ))}
 
       <ProgressionBuilder
         tonic={tonic.note}
         tonicLabel={tonic.label}
-        family={family}
+        family={home}
         seventh={seventh}
         steps={custom}
         onAppend={onAppendStep}

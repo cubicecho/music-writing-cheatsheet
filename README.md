@@ -11,7 +11,10 @@ staves — but nothing in it is instrument-specific.
 
 - **The key's scale**, spelled properly. F♯ major gets an E♯, not an F, because
   a seven-note scale has one of every letter and the cheatsheet that fudges
-  that is teaching the wrong thing.
+  that is teaching the wrong thing. Pentatonic and blues scales too, with the
+  blue note spelled as a flat 5th (G♭ beside G in C) and, in place of chords
+  they do not have, the ones they are played over — the I7, IV7 and V7 of a
+  blues.
 - **Its modes**, as many as you want open at once, shown two ways: *relative*
   (the same seven notes, started somewhere else) or *parallel* (the same root,
   new notes). The second is how you hear what a mode actually does.

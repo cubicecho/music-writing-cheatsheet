@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { playPitches } from '@/lib/audio';
-import type { Chord, Scale, TriadQuality } from '@/lib/music';
-import { chordsInScale, formatNote, midiNumber, voiceChord } from '@/lib/music';
+import type { Chord, TriadQuality } from '@/lib/music';
+import { formatNote, midiNumber, voiceChord } from '@/lib/music';
 import { PlayButton } from './PlayButton';
 
 const QUALITY_BADGE: Record<TriadQuality, { variant: 'default' | 'secondary' | 'outline' | 'warning'; label: string }> =
@@ -20,9 +20,9 @@ function ChordRow({ chord }: { chord: Chord }) {
   const badge = QUALITY_BADGE[chord.quality];
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2">
-      <span className="w-14 shrink-0 font-mono text-muted-foreground text-sm">{chord.numeral}</span>
-      <span className="w-28 shrink-0 font-semibold text-base text-foreground">{chord.symbol}</span>
+    <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 sm:gap-3">
+      <span className="w-10 shrink-0 font-mono text-muted-foreground text-sm sm:w-14">{chord.numeral}</span>
+      <span className="min-w-16 shrink-0 font-semibold text-base text-foreground sm:w-28">{chord.symbol}</span>
       <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
         {chord.tones.map((tone) => (
           <Tooltip key={tone.interval.short}>
@@ -45,22 +45,25 @@ function ChordRow({ chord }: { chord: Chord }) {
           </Tooltip>
         ))}
       </div>
-      <Badge variant={badge.variant}>{badge.label}</Badge>
+      {/* The symbol already says the quality, so at phone width the badge gives up its room to the notes. */}
+      <Badge variant={badge.variant} className="hidden sm:inline-flex">
+        {badge.label}
+      </Badge>
       <PlayButton onClick={() => playPitches(voiceChord(chord.notes))} title={`Play ${chord.symbol}`} />
     </div>
   );
 }
 
 /**
- * Every chord the scale contains, one per degree.
+ * A list of chords, one row each: numeral, symbol, the notes, the quality.
  *
- * Thirds stacked out of the scale's own notes and nothing else — so the table is a fact about the
- * scale rather than a list of chords that tend to go together, and the odd ones the exotic modes
- * throw up (a `C+`, a `m(maj7)`) are there because the scale really does contain them.
+ * The caller decides which chords. For a seven-note scale that is thirds stacked out of its own
+ * notes and nothing else — so the table is a fact about the scale rather than a list of chords
+ * that tend to go together, and the odd ones the exotic modes throw up (a `C+`, a `m(maj7)`) are
+ * there because the scale really does contain them. A pentatonic or blues scale has no chords of
+ * its own and passes the ones it is played over.
  */
-export function ChordTable({ scale, seventh }: { scale: Scale; seventh: boolean }) {
-  const chords = chordsInScale(scale, seventh);
-
+export function ChordTable({ chords }: { chords: Chord[] }) {
   return (
     <div className="flex flex-col gap-1.5">
       {chords.map((chord) => (

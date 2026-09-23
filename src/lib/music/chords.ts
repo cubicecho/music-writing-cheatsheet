@@ -8,9 +8,9 @@
  * why the naming table below is a lookup with an honest fallback rather than a chain of ifs.
  */
 
-import { describeInterval } from './intervals';
-import { formatNote, mod, type Note, pitchClass } from './pitch';
-import type { Scale } from './scales';
+import { describeInterval, type Interval } from './intervals';
+import { formatNote, mod, type Note, pitchClass, spellDegree } from './pitch';
+import { buildMode, familyScale, findFamily, harmonicHome, isGapped, type Scale, type ScaleFamily } from './scales';
 
 export type TriadQuality = 'major' | 'minor' | 'diminished' | 'augmented' | 'sus2' | 'sus4' | 'other';
 
@@ -78,11 +78,11 @@ function semitonesAbove(root: Note, note: Note): number {
 /**
  * The roman numeral, cased and decorated by quality, and carrying the degree's own accidental —
  * so Mixolydian's seventh chord reads `♭VII` rather than `VII`, which is how a writer refers to it.
+ * `interval` is the chord root's distance from the key's tonic.
  */
-function numeralFor(scale: Scale, degreeIndex: number, quality: TriadQuality, suffix: string): string {
-  const degree = scale.degrees[degreeIndex]!.interval.degree;
-  const accidental = degree.replace(/\d+$/, '');
-  const base = ROMAN[degreeIndex] ?? `${degreeIndex + 1}`;
+function numeralFor(interval: Interval, quality: TriadQuality, suffix: string): string {
+  const accidental = interval.degree.replace(/\d+$/, '');
+  const base = ROMAN[interval.number - 1] ?? `${interval.number}`;
   const numeral = quality === 'minor' || quality === 'diminished' ? base.toLowerCase() : base;
   const mark = quality === 'diminished' ? '°' : quality === 'augmented' ? '+' : suffix.startsWith('sus') ? 'sus' : '';
   return `${accidental}${numeral}${mark}`;
@@ -120,7 +120,7 @@ export function chordOnDegree(scale: Scale, degreeIndex: number, seventh = false
     notes,
     symbol: `${formatNote(root)}${suffix}`,
     suffix,
-    numeral: numeralFor(scale, degreeIndex, quality, triad?.suffix ?? ''),
+    numeral: numeralFor(scale.degrees[degreeIndex]!.interval, quality, triad?.suffix ?? ''),
     quality,
     tones: notes.map((note, index) => ({
       note,
@@ -133,4 +133,36 @@ export function chordOnDegree(scale: Scale, degreeIndex: number, seventh = false
 /** Every chord in the scale, one per degree. */
 export function chordsInScale(scale: Scale, seventh = false): Chord[] {
   return scale.degrees.map((_, index) => chordOnDegree(scale, index, seventh));
+}
+
+/**
+ * The chords a family is played over, in the key of `tonic`.
+ *
+ * For a seven-note family that is its own stacked thirds. A gapped family has none of its own —
+ * stacking every other note of a pentatonic scale lands on 4ths as often as 3rds — so it gives
+ * the chords of its `harmony` when it names them, and otherwise its home key's.
+ */
+export function chordsForFamily(tonic: Note, family: ScaleFamily, seventh = false): Chord[] {
+  if (!isGapped(family)) return chordsInScale(familyScale(tonic, family), seventh);
+  if (family.harmony === undefined) return chordsInScale(familyScale(tonic, harmonicHome(family)), seventh);
+
+  const major = findFamily('major');
+  return family.harmony.map(({ step, semitones, mode }) => {
+    const modeIndex = major.modes.findIndex((candidate) => candidate.id === mode);
+    if (modeIndex < 0) throw new Error(`No major-family mode "${mode}"`);
+    const root = spellDegree(tonic, step, semitones);
+    const chord = chordOnDegree(buildMode(root, major, modeIndex), 0, seventh);
+    const triad =
+      TRIADS[
+        chord.tones
+          .slice(1, 3)
+          .map((tone) => tone.interval.semitones)
+          .join(',')
+      ];
+    return {
+      ...chord,
+      degreeIndex: step,
+      numeral: numeralFor(describeInterval(step, semitones), chord.quality, triad?.suffix ?? ''),
+    };
+  });
 }

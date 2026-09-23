@@ -2,7 +2,7 @@ import { OptionSelect } from '@/components/option-select';
 import { SegmentedButton } from '@/components/ui/segmented';
 import { Switch } from '@/components/ui/switch';
 import type { ScaleFamily, Tonic } from '@/lib/music';
-import { SCALE_FAMILIES, TONICS } from '@/lib/music';
+import { GAPPED_FAMILIES, SCALE_FAMILIES, TONICS } from '@/lib/music';
 import { Field } from './Field';
 
 export type ModeView = 'relative' | 'parallel';
@@ -45,7 +45,18 @@ export function KeyPicker({
           className="w-52"
           value={family.id}
           onValueChange={onFamilyChange}
-          options={SCALE_FAMILIES.map((candidate) => ({ value: candidate.id, label: candidate.name }))}
+          options={[
+            ...SCALE_FAMILIES.map((candidate) => ({
+              value: candidate.id,
+              label: candidate.name,
+              group: 'Seven notes',
+            })),
+            ...GAPPED_FAMILIES.map((candidate) => ({
+              value: candidate.id,
+              label: candidate.name,
+              group: 'Pentatonic & blues',
+            })),
+          ]}
         />
       </Field>
 

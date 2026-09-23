@@ -9,13 +9,16 @@ import { ThemePicker } from '@/components/ui/theme-picker';
 import { useThemePreference } from '@/components/ui/theme-preference';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { ProgressionStep } from '@/lib/music';
-import { findFamily, groupProgressions, SCALE_FAMILIES, TONICS } from '@/lib/music';
+import { findFamily, GAPPED_FAMILIES, groupProgressions, harmonicHome, SCALE_FAMILIES, TONICS } from '@/lib/music';
 import type { Song } from '@/lib/song';
 import { newSong } from '@/lib/song';
 
-/** Whichever progression the family leads with, so a tab is never empty on arrival. */
+/**
+ * Whichever progression the family leads with, so a tab is never empty on arrival. A pentatonic or
+ * blues scale leads with its home key's.
+ */
 const firstProgressionOf = (familyId: string) =>
-  groupProgressions(familyId)
+  groupProgressions(harmonicHome(findFamily(familyId)).id)
     .native.slice(0, 1)
     .map((progression) => progression.id);
 
@@ -117,8 +120,8 @@ export default function App() {
         </Tabs>
 
         <footer className="pt-2 pb-6 text-muted-foreground text-xs">
-          Built on {SCALE_FAMILIES.length} scale families × 7 modes. Every chord is thirds stacked out of the scale's
-          own notes — nothing is a lookup table.
+          Built on {SCALE_FAMILIES.length} scale families × 7 modes, plus {GAPPED_FAMILIES.length} pentatonic and blues
+          scales. Every chord is thirds stacked out of the scale's own notes — nothing is a lookup table.
         </footer>
       </Page>
     </TooltipProvider>

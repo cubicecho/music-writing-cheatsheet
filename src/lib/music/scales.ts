@@ -1,11 +1,17 @@
 /**
  * Scale families, and the modes that are rotations of them.
  *
- * Everything here is a seven-note family on purpose. Seven notes is what makes the rest of the
- * cheatsheet work: one note per letter, so the spelling is decided; a chord on every degree, so
- * the chord table has seven rows; and a rotation for every degree, so "the modes" is a list and
- * not a special case. Pentatonic and blues scales belong here eventually, but they break both the
- * spelling rule and the stack-of-thirds rule, so they are their own piece of work.
+ * `SCALE_FAMILIES` is seven-note families only, on purpose. Seven notes is what makes the rest of
+ * the cheatsheet work: one note per letter, so the spelling is decided; a chord on every degree,
+ * so the chord table has seven rows; and a rotation for every degree, so "the modes" is a list and
+ * not a special case. The chord palette and the chord map loop over that array and rely on all
+ * three.
+ *
+ * The pentatonic and blues scales are `GAPPED_FAMILIES`, apart from them, because they break both
+ * rules. Five or six notes cannot each take a letter in turn, so a gapped family says which letter
+ * each degree sits on — which is also how the blues scale gets its ♭5 as G♭ beside G rather than
+ * as F♯. And skipping every other note of a five-note scale does not stack thirds, so a gapped
+ * family has no chords of its own: it is played over the chords of a key, and says which.
  */
 
 import { describeInterval, type Interval } from './intervals';
@@ -37,7 +43,33 @@ export type ScaleFamily = {
   relative?: { familyId: string; degree: number };
   /** The family on the *same* root this one is most usefully heard against. */
   parallel?: string;
+  /**
+   * Gapped families only: the letter each degree is spelled on, as steps above the tonic's letter.
+   * Left out, degree *n* is *n* letters up, which is the seven-note rule.
+   */
+  letters?: number[];
+  /**
+   * Gapped families only: the seven-note family on the same tonic whose chords this scale is
+   * played over. The progressions and the chord map read that key, since a gapped scale has no
+   * chords of its own to walk between.
+   */
+  home?: string;
+  /**
+   * Gapped families only: the chords it is played over, when they are not simply the home key's.
+   * The blues scale is the case — its I7, IV7 and V7 are not diatonic to anything.
+   */
+  harmony?: HarmonyChord[];
+  /** What `harmony` is and why, for the chord panel. Left out, the panel explains the home key. */
+  harmonyNote?: string;
 };
+
+/**
+ * A chord a gapped scale is played over: a root, as a letter step and a distance from the tonic,
+ * and the major-family mode whose tonic chord it is — `mixolydian` for a dominant 7th, `dorian`
+ * for a minor 7th. Naming a mode rather than a chord type keeps the 7th-chord switch working for
+ * free: the same entry is `C` with triads and `C7` with sevenths.
+ */
+export type HarmonyChord = { step: number; semitones: number; mode: string };
 
 export const SCALE_FAMILIES: ScaleFamily[] = [
   {
@@ -317,10 +349,163 @@ export const SCALE_FAMILIES: ScaleFamily[] = [
   },
 ];
 
+/** The chords of a 12-bar, I7–IV7–V7, as the blues scales' `harmony`. */
+const BLUES_CHANGES: HarmonyChord[] = [
+  { step: 0, semitones: 0, mode: 'mixolydian' },
+  { step: 3, semitones: 5, mode: 'mixolydian' },
+  { step: 4, semitones: 7, mode: 'mixolydian' },
+];
+
+const BLUES_NOTE =
+  'The blues scale is not where the blues gets its chords. It is played over three dominant 7ths — I7, IV7 and V7 — and its ♭3 and ♭7 rub against their major 3rds on purpose; that rub is the style. With 7th chords off these are the plain major triads.';
+
+const PENTATONIC_MODES: Record<string, Omit<Mode, 'degree'>> = {
+  major: {
+    id: 'major-pentatonic',
+    name: 'Major pentatonic',
+    character: 'Major with the 4th and 7th taken out. No half step anywhere in it, so no note in it can clash.',
+  },
+  suspended: {
+    id: 'suspended-pentatonic',
+    name: 'Suspended pentatonic',
+    aka: 'Egyptian',
+    character: 'No 3rd at all, so it is neither major nor minor. Open and droning, and at home over a sus chord.',
+  },
+  manGong: {
+    id: 'man-gong',
+    name: 'Man gong',
+    aka: 'Blues minor',
+    character: 'Minor 3rd, ♭6 and ♭7 with no 2nd and no 5th — the darkest rotation, and the least used.',
+  },
+  ritsusen: {
+    id: 'ritsusen',
+    name: 'Ritsusen',
+    aka: 'Yo scale',
+    character: 'No 3rd, but a major 2nd and 6th. Bright and open; the yo scale of Japanese folk music.',
+  },
+  minor: {
+    id: 'minor-pentatonic',
+    name: 'Minor pentatonic',
+    character: 'The rock and blues lead scale: five notes, every one of them safe over a minor chord.',
+  },
+};
+
+const pentatonicMode = (key: keyof typeof PENTATONIC_MODES, degree: number): Mode => ({
+  ...PENTATONIC_MODES[key]!,
+  degree,
+});
+
+export const GAPPED_FAMILIES: ScaleFamily[] = [
+  {
+    id: 'major-pentatonic',
+    name: 'Major pentatonic',
+    intervals: [0, 2, 4, 7, 9],
+    letters: [0, 1, 2, 4, 5],
+    description:
+      'The major scale with its 4th and 7th left out — the two notes that make its half steps and its tritone. What is left has nothing in it that grinds, which is why it is the first scale anyone improvises with.',
+    home: 'major',
+    relative: { familyId: 'minor-pentatonic', degree: 4 },
+    parallel: 'minor-pentatonic',
+    modes: [
+      pentatonicMode('major', 1),
+      pentatonicMode('suspended', 2),
+      pentatonicMode('manGong', 3),
+      pentatonicMode('ritsusen', 4),
+      pentatonicMode('minor', 5),
+    ],
+  },
+  {
+    id: 'minor-pentatonic',
+    name: 'Minor pentatonic',
+    intervals: [0, 3, 5, 7, 10],
+    letters: [0, 2, 3, 4, 6],
+    description:
+      'Natural minor with its 2nd and ♭6 left out. The same five notes as its relative major pentatonic, and the scale most rock and blues solos are played in.',
+    home: 'natural-minor',
+    relative: { familyId: 'major-pentatonic', degree: 1 },
+    parallel: 'major-pentatonic',
+    modes: [
+      pentatonicMode('minor', 1),
+      pentatonicMode('major', 2),
+      pentatonicMode('suspended', 3),
+      pentatonicMode('manGong', 4),
+      pentatonicMode('ritsusen', 5),
+    ],
+  },
+  {
+    id: 'blues',
+    name: 'Blues',
+    intervals: [0, 3, 5, 6, 7, 10],
+    // The ♭5 is spelled on the 5th's letter, as G♭ beside G — the blue note is a bent 5th, not a
+    // raised 4th, and that is how it is written.
+    letters: [0, 2, 3, 4, 4, 6],
+    description:
+      'Minor pentatonic with a ♭5 squeezed in — the blue note, a half step either side of the 5th and only ever passed through. Played over major chords, which is the clash the whole style is built on.',
+    home: 'major',
+    harmony: BLUES_CHANGES,
+    harmonyNote: BLUES_NOTE,
+    relative: { familyId: 'major-blues', degree: 1 },
+    parallel: 'major-blues',
+    modes: [
+      { id: 'blues', name: 'Blues', degree: 1, character: 'The minor-sounding blues: ♭3, ♭5 and ♭7.' },
+      {
+        id: 'major-blues',
+        name: 'Major blues',
+        degree: 2,
+        character: 'The same six notes from the ♭3 — major pentatonic with the ♭3 as a passing note.',
+      },
+    ],
+  },
+  {
+    id: 'major-blues',
+    name: 'Major blues',
+    intervals: [0, 2, 3, 4, 7, 9],
+    // The ♭3 shares the 3rd's letter, as E♭ beside E, for the same reason the blues scale's ♭5 does.
+    letters: [0, 1, 2, 2, 4, 5],
+    description:
+      'Major pentatonic with a ♭3 slid in under the 3rd. Country, gospel and the sunnier end of the blues: the ♭3 is a note you pass through on the way up to the major 3rd, not one you land on.',
+    home: 'major',
+    harmony: BLUES_CHANGES,
+    harmonyNote:
+      'Played over the same three dominant 7ths as the blues scale — I7, IV7 and V7. Here the ♭3 is only ever on its way up to the chord’s major 3rd, which is what makes this the brighter of the two. With 7th chords off these are the plain major triads.',
+    relative: { familyId: 'blues', degree: 5 },
+    parallel: 'blues',
+    modes: [
+      {
+        id: 'major-blues',
+        name: 'Major blues',
+        degree: 1,
+        character: 'The bright blues: major pentatonic with a ♭3 to slide from.',
+      },
+      {
+        id: 'blues',
+        name: 'Blues',
+        degree: 6,
+        character: 'The same six notes from the 6th — the minor blues scale of the relative key.',
+      },
+    ],
+  },
+];
+
 export function findFamily(id: string): ScaleFamily {
-  const family = SCALE_FAMILIES.find((candidate) => candidate.id === id);
+  const family = [...SCALE_FAMILIES, ...GAPPED_FAMILIES].find((candidate) => candidate.id === id);
   if (!family) throw new Error(`No scale family "${id}"`);
   return family;
+}
+
+/** Fewer than seven notes: no letter each, and no chords of its own. */
+export function isGapped(family: ScaleFamily): boolean {
+  return family.intervals.length < 7;
+}
+
+/** The family whose chords this one is played over — itself, for a seven-note family. */
+export function harmonicHome(family: ScaleFamily): ScaleFamily {
+  return family.home === undefined ? family : findFamily(family.home);
+}
+
+/** The letter each degree is spelled on, as steps above the tonic's letter. */
+export function letterSteps(family: ScaleFamily): number[] {
+  return family.letters ?? family.intervals.map((_, step) => step);
 }
 
 /**
@@ -337,6 +522,16 @@ export function rotateIntervals(intervals: number[], modeIndex: number): number[
   });
 }
 
+/**
+ * The letter steps of a family rotated to start on one of its degrees, measured from the new
+ * tonic's letter. The partner of `rotateIntervals`: a mode needs both to be spelled.
+ */
+export function rotateLetters(letters: number[], modeIndex: number): number[] {
+  const size = letters.length;
+  const offset = letters[mod(modeIndex, size)]!;
+  return letters.map((_, step) => mod(letters[mod(modeIndex + step, size)]! - offset, 7));
+}
+
 export type ScaleDegree = {
   note: Note;
   interval: Interval;
@@ -351,22 +546,38 @@ export type Scale = {
   degrees: ScaleDegree[];
 };
 
-/** Builds a spelled scale on `tonic` from a list of semitone offsets. */
-export function buildScale(tonic: Note, intervals: number[]): Scale {
-  const degrees = intervals.map((semitones, step) => {
-    const next = intervals[step + 1] ?? 12;
+/**
+ * Builds a spelled scale on `tonic` from a list of semitone offsets.
+ *
+ * `letters` says which letter each degree is spelled on, and defaults to one letter per degree —
+ * the seven-note rule. It is also the interval's step count, which is what makes the blues
+ * scale's G♭ a diminished 5th rather than an augmented 4th.
+ */
+export function buildScale(
+  tonic: Note,
+  intervals: number[],
+  letters: number[] = intervals.map((_, step) => step),
+): Scale {
+  const degrees = intervals.map((semitones, index) => {
+    const next = intervals[index + 1] ?? 12;
+    const letter = letters[index]!;
     return {
-      note: spellDegree(tonic, step, semitones),
-      interval: describeInterval(step, semitones),
+      note: spellDegree(tonic, letter, semitones),
+      interval: describeInterval(letter, semitones),
       stepToNext: next - semitones,
     };
   });
   return { tonic, intervals, degrees };
 }
 
-/** Builds the scale of one mode of a family, rooted on `tonic`. */
+/** Builds a family's own scale — its first mode — rooted on `tonic`. */
+export function familyScale(tonic: Note, family: ScaleFamily): Scale {
+  return buildScale(tonic, family.intervals, letterSteps(family));
+}
+
+/** Builds the scale of one mode of a family, rooted on `tonic`. `modeIndex` is 0-based. */
 export function buildMode(tonic: Note, family: ScaleFamily, modeIndex: number): Scale {
-  return buildScale(tonic, rotateIntervals(family.intervals, modeIndex));
+  return buildScale(tonic, rotateIntervals(family.intervals, modeIndex), rotateLetters(letterSteps(family), modeIndex));
 }
 
 /**
@@ -374,9 +585,13 @@ export function buildMode(tonic: Note, family: ScaleFamily, modeIndex: number): 
  * means by "the modes of this key", as opposed to the parallel modes built on one root.
  */
 export function relativeMode(keyTonic: Note, family: ScaleFamily, modeIndex: number): Scale {
-  const offset = family.intervals[mod(modeIndex, family.intervals.length)]!;
-  const modeTonic = spellDegree(keyTonic, modeIndex, offset);
-  return buildScale(modeTonic, rotateIntervals(family.intervals, modeIndex));
+  return buildMode(degreeNote(keyTonic, family, modeIndex), family, modeIndex);
+}
+
+/** The note on one degree of a family's scale on `tonic`. `index` is 0-based. */
+export function degreeNote(tonic: Note, family: ScaleFamily, index: number): Note {
+  const size = family.intervals.length;
+  return spellDegree(tonic, letterSteps(family)[mod(index, size)]!, family.intervals[mod(index, size)]!);
 }
 
 export type RelatedKey = { tonic: Note; family: ScaleFamily };
@@ -385,7 +600,7 @@ export type RelatedKey = { tonic: Note; family: ScaleFamily };
 export function relativeKey(tonic: Note, family: ScaleFamily): RelatedKey | undefined {
   if (family.relative === undefined) return undefined;
   const { familyId, degree } = family.relative;
-  return { tonic: spellDegree(tonic, degree, family.intervals[degree]!), family: findFamily(familyId) };
+  return { tonic: degreeNote(tonic, family, degree), family: findFamily(familyId) };
 }
 
 /** The same root, different notes — C major and C natural minor. */

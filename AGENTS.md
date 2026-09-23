@@ -44,7 +44,7 @@ music-writing-cheatsheet/
 │   │   │   ├── Field.tsx              # an overline label over a control, for both settings bars
 │   │   │   ├── ModePicker.tsx         # the mode chips, and `modeRoot`
 │   │   │   ├── NoteStrip.tsx          # the scale as notes + steps, and IntervalBreakdown
-│   │   │   ├── ChordTable.tsx         # one row per degree
+│   │   │   ├── ChordTable.tsx         # one row per chord it is handed
 │   │   │   ├── ScalePanel.tsx         # a card: strip + breakdown + chords
 │   │   │   ├── ProgressionPicker.tsx  # the progression chips, split native/transplanted
 │   │   │   ├── ProgressionPanel.tsx   # one progression as a row of chord blocks
@@ -54,6 +54,7 @@ music-writing-cheatsheet/
 │   │   │   ├── FlowRoute.tsx          # one song section: the path you walked, faint arrows off-chart
 │   │   │   ├── SongPanel.tsx          # the sections in order, chord length + tempo, play the whole song
 │   │   │   ├── RelatedKeys.tsx        # relative/parallel keys, as links
+│   │   │   ├── HomeKeyNote.tsx        # "this tab is reading the pentatonic's home key"
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
 │   │   ├── ui/               # INSTALLED from @cubeui — do not edit by hand
@@ -84,14 +85,22 @@ tested. Seven modules, each with one job:
   semitone count, because six semitones is an augmented 4th or a diminished
   5th depending on how many letters it spans. Produces the formal name, the
   `M3` shorthand and the player's `♭3` degree from one calculation.
-- **`scales.ts`** — the five families and their modes, as data, plus the
-  rotation that turns a family into one of its modes. Every family is seven
-  notes on purpose: it is what gives one note per letter, seven chords and
-  seven rotations without a special case.
+- **`scales.ts`** — the five seven-note families (`SCALE_FAMILIES`) and the
+  four pentatonic and blues ones (`GAPPED_FAMILIES`), with their modes, as
+  data, plus the rotation that turns a family into one of its modes. The two
+  arrays are apart on purpose: seven notes is what gives one note per letter,
+  seven chords and seven rotations without a special case, and the chord
+  palette and the chord map loop over `SCALE_FAMILIES` relying on all three. A
+  gapped family carries `letters` (which letter each degree is spelled on — the
+  blues ♭5 is G♭ beside G, not F♯) and a `home` key whose chords it is played
+  over. `familyScale`, `buildMode` and `degreeNote` read `letters`;
+  `buildScale(tonic, intervals)` alone assumes one letter per degree.
 - **`chords.ts`** — thirds stacked out of the scale's own notes. The naming is
   a lookup keyed on the intervals that come out, with a fallback that describes
   rather than guesses; `chord.unnamed` says which happened, and a test asserts
-  that nothing in the shipped families hits the fallback.
+  that nothing in the shipped families hits the fallback. `chordsForFamily` is
+  what a chord panel asks for: a seven-note family's own thirds, a gapped
+  family's `harmony` (the blues' I7–IV7–V7) or else its home key's chords.
 - **`progressions.ts`** — progressions as lists of scale *degrees*, which is
   what lets one entry realise correctly in every key and every family. A step
   may name a `borrowedFrom` family to take that one chord from the parallel
@@ -183,10 +192,16 @@ the rest still realise — a major-key shape against a minor scale is a differen
 real progression, not an error. Add `families: ['your-family-id']` to anything
 the new family should lead with.
 
-Pentatonic and blues scales do **not** fit. They break the one-note-per-letter
-rule and the stack-of-thirds rule, so they need their own spelling path and
-their own answer for the chord panel. That is a separate piece of work, not a
-row in the array.
+A pentatonic or blues scale goes in `GAPPED_FAMILIES` instead. It needs
+`letters` alongside `intervals` (ascending, repeating a letter only where two
+degrees share one), a `home` seven-note family, and optionally `harmony` plus
+`harmonyNote` when the chords it is played over are not the home key's. Its
+`modes` list only the rotations worth naming, so a mode's `degree`, not its
+position in the array, is its rotation — `ModePicker` and `ScalesTab` read
+`mode.degree - 1`. A mode whose id is also a gapped family's id shows that
+family's chords; the rest show none. The Progressions and Chord map tabs read
+`harmonicHome(family)`, so they need nothing new; `gapped.test.ts` checks the
+spelling, the relatives and the chords by name.
 
 ## What the install turned up
 
