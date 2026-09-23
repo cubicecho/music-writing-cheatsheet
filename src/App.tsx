@@ -86,7 +86,7 @@ export default function App() {
         />
 
         <Tabs defaultValue="scales">
-          <TabsList>
+          <TabsList aria-label="Cheatsheet view">
             <TabsTrigger value="scales">Scale &amp; chords</TabsTrigger>
             <TabsTrigger value="progressions">Progressions</TabsTrigger>
             <TabsTrigger value="map">Chord map</TabsTrigger>

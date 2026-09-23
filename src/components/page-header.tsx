@@ -49,8 +49,13 @@ export type PageHeaderLevel = keyof typeof LEVELS;
 /** Off the screen and still read. `sr-only` is a clip, which the device does not have. */
 const SR_ONLY = "sr-only";
 
-/** Colour the web inherits and the device has to be told. */
-const INK = undefined;
+/**
+ * The title's colour, on every platform. The compiled `<h1>` would inherit it, but react-native-web
+ * is web too and gives every `Text` its own black `color` — so leaving it to inheritance on web
+ * drew the title black on the dark theme under Expo web. `titleClassName` comes later in the `cn`
+ * and still wins.
+ */
+const INK = "text-foreground";
 
 /**
  * A wrapper around a caller's node, not layout of its own: a block box on the web, where a compiled
