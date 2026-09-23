@@ -4,8 +4,9 @@ import type { ModeView } from '@/components/domain/KeyPicker';
 import { ProgressionsTab } from '@/components/domain/ProgressionsTab';
 import { ScalesTab } from '@/components/domain/ScalesTab';
 import { Page, PageHeader } from '@/components/page';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemePicker } from '@/components/ui/theme-picker';
+import { useThemePreference } from '@/components/ui/theme-preference';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { ProgressionStep } from '@/lib/music';
 import { findFamily, groupProgressions, SCALE_FAMILIES, TONICS } from '@/lib/music';
@@ -27,6 +28,9 @@ const DEFAULT_FAMILY = 'major';
  * a tab shows is derived entirely from state that lives up here.
  */
 export default function App() {
+  // The picker in the header is bound to the same hook, but applying the theme is the app's job,
+  // not a side effect of wherever the picker happens to be mounted.
+  useThemePreference();
   const [tonicId, setTonicId] = useState('C');
   const [familyId, setFamilyId] = useState(DEFAULT_FAMILY);
   const [modeView, setModeView] = useState<ModeView>('relative');
@@ -75,7 +79,7 @@ export default function App() {
         <PageHeader
           title="Music writing cheatsheet"
           description="Pick a key. The scale, its intervals, its modes, its chords and the progressions people build out of them all follow from it."
-          action={<ThemeToggle />}
+          action={<ThemePicker />}
         />
 
         <Tabs defaultValue="scales">

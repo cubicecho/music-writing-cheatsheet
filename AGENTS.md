@@ -62,13 +62,11 @@ music-writing-cheatsheet/
 │   │   ├── page.tsx          # INSTALLED (@cubeui/page)
 │   │   ├── page-header.tsx   # INSTALLED (@cubeui/page-header)
 │   │   ├── section-heading.tsx  # INSTALLED (@cubeui/section-heading)
-│   │   ├── section.tsx       # INSTALLED (@cubeui/section)
-│   │   └── ThemeToggle.tsx
+│   │   └── section.tsx       # INSTALLED (@cubeui/section)
 │   ├── lib/
 │   │   ├── audio.ts          # the only impure module: Web Audio
 │   │   ├── music/            # the theory core and its tests
 │   │   ├── song.ts           # the chord map's song: sections, their order, beats and tempo
-│   │   ├── theme.ts
 │   │   ├── utils.ts          # INSTALLED (@cubeui/utils)
 │   │   └── color.ts          # INSTALLED (@cubeui/color)
 └── AGENTS.md
@@ -231,11 +229,18 @@ to re-derive.
 8. **Nothing said an item was web-only** (#55), so a consumer could not tell a
    shell that compiles for both platforms from one that never will.
 
-Two things from that list are worth knowing as *rules* rather than as history:
-a registry item is installed, not edited, and the theme toggle is still this
-app's own. `ThemeToggle` and `src/lib/theme.ts` are hand-written because the
-registry has no light/dark/system control yet — that is cubicecho/cubeui #77,
-the one finding still open. When it lands, this is the file to delete.
+One thing from that list is worth knowing as a *rule* rather than as history:
+a registry item is installed, not edited.
+
+The last hand-written control went with cubicecho/cubeui #77. The header's
+light/dark/system switch is `@cubeui/theme-picker`: `ThemePicker` in the
+header, `useThemePreference()` at the root of `App` so applying the theme does
+not depend on where the picker is mounted, and the registry's pre-paint script
+inline in `index.html`. That script is a copy of `THEME_PRE_PAINT_SCRIPT` in
+`src/components/ui/theme-preference-base.ts` because the head here is static
+HTML, so a reinstall that changes the export means pasting it again. The
+preference is stored under `cubeui-theme`, not the old `mwc-theme`. Anyone who
+had picked a theme before the switch starts back on System, once.
 
 ### The September 2026 reinstall
 

@@ -8,14 +8,9 @@
       name="description"
       content="Pick a key and see its scale, modes, intervals and chords."
     />
-    <script>
-      // Before first paint, so the page never flashes the wrong palette.
-      (() => {
-        const stored = localStorage.getItem('mwc-theme');
-        const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-        if (dark) document.documentElement.classList.add('dark');
-      })();
-    </script>
+    <!-- Before first paint, so the page never flashes the wrong palette. Copied from cubeui's
+         THEME_PRE_PAINT_SCRIPT (src/components/ui/theme-preference-base.ts); keep the two in step. -->
+    <script>(function(){try{var p=localStorage.getItem("cubeui-theme");var d=p==="dark"||(p!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);var c=document.documentElement.classList;c.toggle("dark",d);c.toggle("light",p==="light")}catch(e){}})();</script>
   </head>
   <body>
     <div id="root"></div>

@@ -13,6 +13,7 @@ export {
   Copy,
   Download,
   LoaderCircle,
+  Monitor,
   Moon,
   Pause,
   Pencil,
