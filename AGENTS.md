@@ -300,7 +300,9 @@ stamped with the labels it was taken for so a stale measurement is never drawn.
 Nothing on the page is a hand-rolled version of something the registry ships:
 `PlayButton` and `FlowRoute`'s icon row are `@cubeui/action-button`, the
 relative/parallel key links and both sketchpads' *Clear* are `@cubeui/button`
-with a variant, and the `<button>`s that remain are the ones the registry has
+with a variant, the key picker's *Show modes as* pills are `@cubeui/segmented`'s
+`SegmentedGroup` and its 7ths toggle is `@cubeui/switch-field` (cubicecho/cubeui
+#104 and #105 were filed from here), and the `<button>`s that remain are the ones the registry has
 no item for — `ChordBlock`'s chord face and its floating remove ×,
 `NoteStrip`'s note, octave and step tiles, `ChordTable`'s chord-tone chips.
 Those are data tiles rather than controls, and `Button` wraps a bare string

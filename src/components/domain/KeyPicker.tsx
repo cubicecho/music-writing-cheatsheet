@@ -1,6 +1,6 @@
 import { OptionSelect } from '@/components/option-select';
-import { SegmentedButton } from '@/components/ui/segmented';
-import { Switch } from '@/components/ui/switch';
+import { SegmentedButton, SegmentedGroup } from '@/components/ui/segmented';
+import { SwitchField } from '@/components/ui/switch-field';
 import type { ScaleFamily, Tonic } from '@/lib/music';
 import { GAPPED_FAMILIES, SCALE_FAMILIES, TONICS } from '@/lib/music';
 import { Field } from './Field';
@@ -68,30 +68,26 @@ export function KeyPicker({
             Parallel keeps the tonic and changes the notes, which is the comparison that shows what
             a mode actually does to a sound.
           */}
-          {/* Named by hand until @cubeui/segmented has a group of its own (cubicecho/cubeui#105). */}
-          <fieldset
+          <SegmentedGroup
             aria-label="Show modes as"
-            className="flex h-10 items-center gap-1 rounded-md border border-border bg-background p-1"
+            value={modeView}
+            onValueChange={(view) => onModeViewChange(view as ModeView)}
           >
-            <SegmentedButton active={modeView === 'relative'} onClick={() => onModeViewChange('relative')}>
-              Relative
-            </SegmentedButton>
-            <SegmentedButton active={modeView === 'parallel'} onClick={() => onModeViewChange('parallel')}>
-              Parallel
-            </SegmentedButton>
-          </fieldset>
+            <SegmentedButton value="relative">Relative</SegmentedButton>
+            <SegmentedButton value="parallel">Parallel</SegmentedButton>
+          </SegmentedGroup>
         </Field>
       ) : null}
 
       <Field label="Chords" className="min-w-44">
-        {/* Not `@cubeui/switch-field` yet: on the web its caption toggles twice and does nothing
-            (cubicecho/cubeui#104). Swap it in once that is fixed. */}
-        <div className="flex h-10 items-center gap-2">
-          <Switch id="sevenths" checked={seventh} onCheckedChange={onSeventhChange} />
-          <label className="cursor-pointer text-foreground text-sm" htmlFor="sevenths">
-            7th chords
-          </label>
-        </div>
+        <SwitchField
+          id="sevenths"
+          label="7th chords"
+          checked={seventh}
+          onCheckedChange={onSeventhChange}
+          className="h-10"
+          labelClassName="text-foreground"
+        />
       </Field>
     </div>
   );
