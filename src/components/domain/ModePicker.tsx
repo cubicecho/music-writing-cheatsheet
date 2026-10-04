@@ -7,8 +7,8 @@ type ModePickerProps = {
   family: ScaleFamily;
   tonic: Note;
   modeView: ModeView;
-  selected: string[];
-  onToggle: (modeId: string) => void;
+  selected: string | null;
+  onSelect: (modeId: string) => void;
 };
 
 /**
@@ -21,11 +21,12 @@ export function modeRoot(tonic: Note, family: ScaleFamily, modeIndex: number, vi
   return degreeNote(tonic, family, modeIndex);
 }
 
-export function ModePicker({ family, tonic, modeView, selected, onToggle }: ModePickerProps) {
+/** One mode open at a time: picking another replaces it, and picking the open one again leaves it open. */
+export function ModePicker({ family, tonic, modeView, selected, onSelect }: ModePickerProps) {
   return (
     <div className="flex flex-wrap gap-2">
       {family.modes.map((mode: Mode) => (
-        <ToggleChip key={mode.id} selected={selected.includes(mode.id)} onClick={() => onToggle(mode.id)} size="sm">
+        <ToggleChip key={mode.id} selected={selected === mode.id} onClick={() => onSelect(mode.id)} size="sm">
           {`${mode.degree} · ${formatNote(modeRoot(tonic, family, mode.degree - 1, modeView))} ${mode.name}`}
         </ToggleChip>
       ))}

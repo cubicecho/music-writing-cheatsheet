@@ -8,9 +8,10 @@
       name="description"
       content="Pick a key and see its scale, modes, intervals and chords."
     />
-    <!-- Before first paint, so the page never flashes the wrong palette. Copied from cubeui's
-         THEME_PRE_PAINT_SCRIPT (src/components/ui/theme-preference-base.ts); keep the two in step. -->
-    <script>(function(){try{var p=localStorage.getItem("cubeui-theme");var d=p==="dark"||(p!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);var c=document.documentElement.classList;c.toggle("dark",d);c.toggle("light",p==="light")}catch(e){}})();</script>
+    <!-- Before first paint, so the page never flashes the wrong theme. The light/dark half of cubeui's
+         THEME_PRE_PAINT_SCRIPT (src/components/ui/theme-preference-base.ts); keep that half in step.
+         The palette half is left out on purpose: this app is always the default palette (see App.tsx). -->
+    <script>(function(){try{var p=localStorage.getItem("cubeui-theme"),d=p==="dark"||(p!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches),c=document.documentElement.classList;c.toggle("dark",d);c.toggle("light",p==="light")}catch(e){}})();</script>
   </head>
   <body>
     <div id="root"></div>

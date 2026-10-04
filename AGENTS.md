@@ -33,7 +33,7 @@ music-writing-cheatsheet/
 ├── cubeui-reset.css          # installed: @cubeui/tokens (imports itself from the tokens)
 ├── scripts/serve-cubeui.mjs  # serves ../cubeui/public on :8731, for unpublished changes
 ├── src/
-│   ├── App.tsx               # all the state + the three tabs; the tabs are uncontrolled
+│   ├── App.tsx               # all the state + the four tabs; the tabs are uncontrolled
 │   ├── index.css             # tailwind → tokens → the RN reset, in that order
 │   ├── components/
 │   │   ├── domain/           # the app's own components
@@ -55,6 +55,11 @@ music-writing-cheatsheet/
 │   │   │   ├── SongPanel.tsx          # the sections in order, chord length + tempo, play the whole song
 │   │   │   ├── RelatedKeys.tsx        # relative/parallel keys, as links
 │   │   │   ├── HomeKeyNote.tsx        # "this tab is reading the pentatonic's home key"
+│   │   │   ├── RhythmsTab.tsx         # tab 4: drum patterns, which read no key at all
+│   │   │   ├── RhythmPanel.tsx        # one rhythm: staff, grid, play, download as MIDI
+│   │   │   ├── RhythmStaff.tsx        # the pattern as drum notation, drawn as SVG
+│   │   │   ├── RhythmGrid.tsx         # the pattern as a step grid (a real table)
+│   │   │   ├── useRhythmPlayback.ts   # playing four bars, and which step is sounding
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
 │   │   ├── ui/               # INSTALLED from @cubeui — do not edit by hand
@@ -67,6 +72,7 @@ music-writing-cheatsheet/
 │   ├── lib/
 │   │   ├── audio.ts          # the only impure module: Web Audio
 │   │   ├── music/            # the theory core and its tests
+│   │   ├── rhythm/           # the rhythm catalogue, its timing, notation and MIDI, and their tests
 │   │   ├── song.ts           # the chord map's song: sections, their order, beats and tempo
 │   │   ├── utils.ts          # INSTALLED (@cubeui/utils)
 │   │   └── color.ts          # INSTALLED (@cubeui/color)
@@ -164,6 +170,46 @@ rereads itself when you change key.
   one transport can be in charge: while the song plays, each section's own
   play button is disabled and its highlight comes from the song.
 
+## The rhythm layer
+
+`src/lib/rhythm/` is the fourth tab's core, and it is separate from
+`src/lib/music/` because none of it depends on a key. It is pure and tested
+the same way.
+
+- **`patterns.ts` is the catalogue.** A `Rhythm` is a meter, a `division`
+  (steps per beat: 2, 3 or 4), a tempo and one string per instrument, a
+  character per step: `.` nothing, `x` a hit, `X` an accent, `o` a ghost note.
+  Every row of a rhythm is the same length, and that length is one or two whole
+  bars. `swing: true` is only for rhythms written in eighths.
+- **A beat is a `pulse`, not always a quarter.** 6/8 and 12/8 count in dotted
+  quarters, so `bpm` is pulses a minute and `tempoMark` writes `♩. = 58`. The
+  MIDI file converts, because a MIDI tempo is always in quarters.
+- **`timing.ts` turns steps into ticks** (480 to the quarter). Swing is applied
+  there and nowhere else: the off-beat eighth moves to two thirds of the beat.
+  The staff still writes straight eighths under the word *Swing*, which is how
+  it is written by hand.
+- **`notation.ts` decides what is written, `RhythmStaff` only draws it.** One
+  voice, stems up: within a beat a note lasts until the next thing struck, a
+  beat that opens on silence opens with a rest, and nothing is tied across a
+  beat. That is why a pattern that cannot be spelled in quarters, eighths,
+  sixteenths and their dots throws — and why a test notates every rhythm in
+  the catalogue.
+- **`midi.ts` writes the download**: a format-0 file on channel 10 with the
+  General MIDI drum keys, the pattern repeated out to `PHRASE_BARS` (4) and the
+  track ended exactly on the fourth barline so it loops in a DAW.
+- **No editing yet.** Nothing in the layer assumes the catalogue is fixed — the
+  staff, grid, playback and MIDI all take any valid `Rhythm` — so an editor is
+  a matter of producing one, not of changing these.
+
+### Adding a rhythm
+
+Add an entry to `RHYTHMS` in `patterns.ts` under an existing `style`. Write the
+rows against the count (`x.x.x.x.` is eighths in 4/4 at `division: 2`), keep
+them the same length, and run the tests: the catalogue tests will say if a row
+is the wrong length, uses a character it may not, or cannot be notated. A new
+instrument goes in `INSTRUMENTS` with its General MIDI key and staff position,
+and needs a voice in the `KIT` in `src/lib/audio.ts`.
+
 ## Sound
 
 `src/lib/audio.ts` is the one impure module. An `AudioContext` cannot exist
@@ -177,6 +223,9 @@ with its master gain on the context object. Two things to know:
   trusted for sound. It returns a `{ stop }` handle and runs through a gain
   node of its own, so stopping one panel leaves another panel's playback alone.
   `useSequence` wraps that in the `playing` / `step` state a panel renders.
+- The drums are synthesised too — sine sweeps and filtered noise, no samples —
+  and `playDrums` takes hits already placed in milliseconds, so swing and
+  meter stay in `src/lib/rhythm/` where they are tested.
 
 ## Adding a scale family
 
@@ -256,6 +305,17 @@ inline in `index.html`. That script is a copy of `THEME_PRE_PAINT_SCRIPT` in
 HTML, so a reinstall that changes the export means pasting it again. The
 preference is stored under `cubeui-theme`, not the old `mwc-theme`. Anyone who
 had picked a theme before the switch starts back on System, once.
+
+**The palette is always the default.** cubeui now has palettes beside light and
+dark (Monokai), stored under `cubeui-palette` — one key per *origin*, so a
+palette picked in another cubeui app on the same origin (the cubeui docs on
+github.io, another dev server on the same localhost port) is painted here too,
+and `ThemePicker` without `palettes` gives no way to change it back. `App`
+therefore resets a stored palette to `default`, and the script in `index.html`
+is only the light/dark half of `THEME_PRE_PAINT_SCRIPT`. The cost is that
+opening this app also resets the palette for those other apps. To offer
+palettes here instead, pass `palettes` to `ThemePicker`, delete the reset in
+`App`, and paste the full script back.
 
 ### The September 2026 reinstall
 

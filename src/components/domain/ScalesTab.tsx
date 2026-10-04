@@ -54,11 +54,11 @@ type ScalesTabProps = {
   onModeViewChange: (view: ModeView) => void;
   seventh: boolean;
   onSeventhChange: (seventh: boolean) => void;
-  openModes: string[];
-  onToggleMode: (id: string) => void;
+  modeId: string | null;
+  onSelectMode: (id: string) => void;
 };
 
-/** The key's scale, its intervals, its chords, and whichever of its modes are open. */
+/** The key's scale, its intervals, its chords, and whichever one of its modes is open. */
 export function ScalesTab({
   tonic,
   onTonicChange,
@@ -69,15 +69,15 @@ export function ScalesTab({
   onModeViewChange,
   seventh,
   onSeventhChange,
-  openModes,
-  onToggleMode,
+  modeId,
+  onSelectMode,
 }: ScalesTabProps) {
   // Mode ids are only unique inside a family — major and natural minor share Dorian, Lydian and
-  // the rest — so the open list is both cleared on a family change and filtered against the
-  // family currently showing.
+  // the rest — so the open mode is both cleared on a family change and looked up in the family
+  // currently showing.
   const shownModes = family.modes
     .map((mode) => ({ mode, index: mode.degree - 1 }))
-    .filter(({ mode }) => openModes.includes(mode.id));
+    .filter(({ mode }) => mode.id === modeId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,18 +108,12 @@ export function ScalesTab({
           <SectionHeading variant="overline">Modes</SectionHeading>
           <span className="text-muted-foreground text-sm">
             {modeView === 'relative'
-              ? `The same ${family.intervals.length === 7 ? 'seven' : family.intervals.length === 6 ? 'six' : 'five'} notes as ${tonic.label} ${family.name.toLowerCase()}, started somewhere else. Pick any to open them.`
-              : `Each mode built on ${tonic.label} itself, so the notes change and the root does not. Pick any to open them.`}
+              ? `The same ${family.intervals.length === 7 ? 'seven' : family.intervals.length === 6 ? 'six' : 'five'} notes as ${tonic.label} ${family.name.toLowerCase()}, started somewhere else. Pick one to open it.`
+              : `Each mode built on ${tonic.label} itself, so the notes change and the root does not. Pick one to open it.`}
           </span>
         </div>
 
-        <ModePicker
-          family={family}
-          tonic={tonic.note}
-          modeView={modeView}
-          selected={openModes}
-          onToggle={onToggleMode}
-        />
+        <ModePicker family={family} tonic={tonic.note} modeView={modeView} selected={modeId} onSelect={onSelectMode} />
       </div>
 
       {shownModes.map(({ mode, index }) => {

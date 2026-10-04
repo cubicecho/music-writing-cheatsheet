@@ -6,8 +6,8 @@ import { groupProgressions, realizeProgression } from '@/lib/music';
 type ProgressionPickerProps = {
   tonic: Note;
   family: ScaleFamily;
-  selected: string[];
-  onToggle: (id: string) => void;
+  selected: string | null;
+  onSelect: (id: string) => void;
 };
 
 /** The chord symbols of a progression, as a preview short enough to fit on a chip. */
@@ -24,7 +24,7 @@ function Group({
   tonic,
   family,
   selected,
-  onToggle,
+  onSelect,
 }: ProgressionPickerProps & { label: string; hint: string; progressions: Progression[] }) {
   if (progressions.length === 0) return null;
 
@@ -38,8 +38,8 @@ function Group({
         {progressions.map((progression) => (
           <ToggleChip
             key={progression.id}
-            selected={selected.includes(progression.id)}
-            onClick={() => onToggle(progression.id)}
+            selected={selected === progression.id}
+            onClick={() => onSelect(progression.id)}
             size="sm"
           >
             {`${progression.name} · ${preview(tonic, family, progression)}`}
@@ -51,22 +51,23 @@ function Group({
 }
 
 /**
- * Every progression, split by whether it is native to the scale showing.
+ * Every progression, split by whether it is native to the scale showing. One is open at a time, across
+ * both groups: picking another replaces it, and picking the open one again leaves it open.
  *
  * The split matters more than the filtering would: a major-key shape played against a minor scale
  * is a real progression, just a different one, and seeing the same four degrees answered by
  * different chords is the fastest way to understand what a scale actually decides.
  */
-export function ProgressionPicker({ tonic, family, selected, onToggle }: ProgressionPickerProps) {
+export function ProgressionPicker({ tonic, family, selected, onSelect }: ProgressionPickerProps) {
   const { native, transplanted } = groupProgressions(family.id);
-  const shared = { tonic, family, selected, onToggle };
+  const shared = { tonic, family, selected, onSelect };
 
   return (
     <div className="flex flex-col gap-5">
       <Group
         {...shared}
         label={`In ${family.name.toLowerCase()}`}
-        hint="Written for this scale. Pick any to open them."
+        hint="Written for this scale. Pick one to open it."
         progressions={native}
       />
       <Group

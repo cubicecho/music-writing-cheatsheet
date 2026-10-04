@@ -13,8 +13,8 @@ type ProgressionsTabProps = {
   onFamilyChange: (id: string) => void;
   seventh: boolean;
   onSeventhChange: (seventh: boolean) => void;
-  openProgressions: string[];
-  onToggleProgression: (id: string) => void;
+  progressionId: string | null;
+  onSelectProgression: (id: string) => void;
   custom: ProgressionStep[];
   onAppendStep: (step: ProgressionStep) => void;
   onRemoveStep: (position: number) => void;
@@ -29,8 +29,8 @@ export function ProgressionsTab({
   onFamilyChange,
   seventh,
   onSeventhChange,
-  openProgressions,
-  onToggleProgression,
+  progressionId,
+  onSelectProgression,
   custom,
   onAppendStep,
   onRemoveStep,
@@ -38,7 +38,7 @@ export function ProgressionsTab({
 }: ProgressionsTabProps) {
   // A pentatonic or blues scale is read as the key it is played in; the picker keeps showing it.
   const home = harmonicHome(family);
-  const shown = PROGRESSIONS.filter((progression) => openProgressions.includes(progression.id));
+  const progression = PROGRESSIONS.find((candidate) => candidate.id === progressionId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,14 +54,11 @@ export function ProgressionsTab({
 
       <HomeKeyNote tonic={tonic} family={family} />
 
-      <ProgressionPicker tonic={tonic.note} family={home} selected={openProgressions} onToggle={onToggleProgression} />
+      <ProgressionPicker tonic={tonic.note} family={home} selected={progressionId} onSelect={onSelectProgression} />
 
-      {shown.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Pick a progression above to see it in {tonic.label}.</p>
-      ) : null}
-
-      {shown.map((progression) => (
+      {progression ? (
         <ProgressionPanel
+          // Keyed, so that changing progression starts a new panel and stops the old one playing.
           key={progression.id}
           progression={progression}
           tonic={tonic.note}
@@ -70,7 +67,9 @@ export function ProgressionsTab({
           seventh={seventh}
           native={progression.families.includes(home.id)}
         />
-      ))}
+      ) : (
+        <p className="text-muted-foreground text-sm">Pick a progression above to see it in {tonic.label}.</p>
+      )}
 
       <ProgressionBuilder
         tonic={tonic.note}

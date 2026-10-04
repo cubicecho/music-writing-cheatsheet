@@ -15,7 +15,7 @@ staves — but nothing in it is instrument-specific.
   blue note spelled as a flat 5th (G♭ beside G in C) and, in place of chords
   they do not have, the ones they are played over — the I7, IV7 and V7 of a
   blues.
-- **Its modes**, as many as you want open at once, shown two ways: *relative*
+- **Its modes**, one open at a time, shown two ways: *relative*
   (the same seven notes, started somewhere else) or *parallel* (the same root,
   new notes). The second is how you hear what a mode actually does.
 - **The intervals**, three ways over — the degree under each note (`1 2 ♭3 4`),
@@ -46,6 +46,12 @@ staves — but nothing in it is instrument-specific.
   Every chord is held the same length, which you set once in beats with a tempo
   beside it, so C, C, Am, G at four beats is two bars of C and one each of Am
   and G — a chord that stays is a chord written twice.
+- **Rhythms**, on a fourth tab, and the one thing here that does not follow the
+  key. The beats songs are built on — rock, four on the floor, a train beat, a
+  waltz, a shuffle, jazz swing, son and rumba clave, bossa nova, the 6/8 bell,
+  one drop, dembow, funk, boom bap — each written twice: on a drum staff, and
+  on a grid with a column per step, counted *1 e & a*. Play four bars, or
+  download those four bars as a MIDI file to drop into a DAW.
 - **Sound.** Click any note, chord or chord tone to hear it; play a scale from
   the root up, or a progression through in time with the chord it is on
   highlighted. Reading that a ♭VI is "brighter than you expect" is not the same
