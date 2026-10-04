@@ -10,7 +10,7 @@ export type ToggleChipProps = Omit<
    * Overrides the selected background with a literal colour — for a chip whose
    * own colour is the content, such as a palette swatch. Passing it also turns
    * off the selected label colour, since the caller's background is unknown and
-   * `text-primary-foreground` would be a guess. Pair it with
+   * `text-selection-foreground` would be a guess. Pair it with
    * `readableTextColor` if the label has to stay legible on an arbitrary hue.
    */
   backgroundColor?: string | undefined;
@@ -50,7 +50,7 @@ const ToggleChip = React.forwardRef<HTMLButtonElement, ToggleChipProps>(
         "cube-rn-view cube-rn-pressable",
         "rounded-md border",
         size === "sm" ? "px-2 py-1" : "px-3 py-2",
-        selected ? "border-primary bg-primary" : "border-border bg-background hover:bg-muted",
+        selected ? "border-selection bg-selection" : "border-border bg-background hover:bg-accent",
         // The label colour on the container as well as on the `<Text>` below,
         // and that is not a duplicate. The `<Text>` is the only one native
         // reads, and it is only ever reached by a bare string; an element
@@ -58,7 +58,7 @@ const ToggleChip = React.forwardRef<HTMLButtonElement, ToggleChipProps>(
         // through untouched and on web takes its colour by inheriting from
         // here. Without this line a selected chip holding markup drew
         // `text-foreground` on `bg-primary`, which is near-black on near-black.
-        selected && !backgroundColor ? "text-primary-foreground" : "text-foreground",
+        selected && !backgroundColor ? "text-selection-foreground" : "text-foreground",
         disabled && "opacity-60",
         className,
       )}
@@ -71,7 +71,7 @@ const ToggleChip = React.forwardRef<HTMLButtonElement, ToggleChipProps>(
             "cube-rn-text",
             "font-medium",
             size === "sm" ? "text-xs" : "text-sm",
-            selected && !backgroundColor ? "text-primary-foreground" : "text-foreground",
+            selected && !backgroundColor ? "text-selection-foreground" : "text-foreground",
           )}
         >
           {children}
