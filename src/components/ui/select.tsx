@@ -1,6 +1,8 @@
 import { Select as SelectPrimitive } from "radix-ui";
 import type { ComponentPropsWithRef, ElementType } from "react";
 import {
+  SELECT_CONTENT_CLASS,
+  SELECT_ICON_CLASS,
   SELECT_ITEM_CLASS,
   SELECT_ITEM_TEXT_CLASS,
   SELECT_LABEL_CLASS,
@@ -8,6 +10,7 @@ import {
   SELECT_TRIGGER_CLASS,
   SELECT_TRIGGER_TEXT_CLASS,
 } from "@/components/ui/select-base";
+import { FrameFocusGuard } from "@/lib/frame-focus-guard";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, ChevronUp } from "@/components/ui/icons";
 
@@ -25,6 +28,7 @@ type RootProps = ComponentPropsWithRef<typeof SelectPrimitive.Root>;
  */
 type SelectProps = { [K in keyof RootProps]?: RootProps[K] | undefined };
 
+/** The root of a select: it holds the chosen value and the open state. */
 function Select(props: SelectProps) {
   // An explicit `undefined` is dropped rather than passed on: radix reads the presence of `open`
   // and `value` as the switch between controlled and uncontrolled, and a caller forwarding an
@@ -32,17 +36,33 @@ function Select(props: SelectProps) {
   const defined = Object.fromEntries(
     Object.entries(props).filter(([, value]) => value !== undefined),
   ) as RootProps;
+  const { onValueChange } = defined;
+  // Inside a `<form>` radix mirrors the value into a hidden native `<select>` and reports that
+  // element's `change` back. A value whose item has not rendered yet — a list still being fetched,
+  // an option just created — has no `<option>` there, so the element reads `""` and radix hands
+  // that back as if it had been picked. No item can carry `""` (radix refuses one), so it is never
+  // a choice: dropping it keeps the value until its option arrives.
+  if (onValueChange) {
+    defined.onValueChange = (next) => {
+      if (next !== "") {
+        onValueChange(next);
+      }
+    };
+  }
   return <SelectPrimitive.Root data-slot="select" {...defined} />;
 }
 
+/** A set of options under a `SelectLabel`. */
 function SelectGroup(props: Props<typeof SelectPrimitive.Group>) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
+/** The chosen option's label, or the placeholder, inside the trigger. */
 function SelectValue(props: Props<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
+/** The button that shows the chosen value and opens the options. */
 function SelectTrigger({
   className,
   size = "default",
@@ -60,18 +80,19 @@ function SelectTrigger({
       className={cn(
         SELECT_TRIGGER_CLASS,
         SELECT_TRIGGER_TEXT_CLASS,
-        "ring-offset-background focus:ring-ring flex focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive data-[placeholder]:text-muted-foreground data-[size=sm]:h-8 [&>span]:line-clamp-1",
+        "flex focus:outline-none disabled:cursor-not-allowed disabled:bg-foreground/10 disabled:opacity-50 aria-invalid:border-negative aria-invalid:focus:border-active focus:border-active data-[placeholder]:text-foreground/60 data-[size=sm]:h-8 [&>span]:line-clamp-1",
         className,
       )}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-50" />
+        <ChevronDown className={SELECT_ICON_CLASS} />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
 }
 
+/** The list of options. */
 function SelectContent({
   className,
   children,
@@ -87,7 +108,8 @@ function SelectContent({
         align={align}
         {...props}
         className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+          "text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 max-h-(--radix-select-content-available-height) min-w-32 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto",
+          SELECT_CONTENT_CLASS,
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className,
@@ -104,11 +126,14 @@ function SelectContent({
           {children}
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
+        {/* A framed app focusing itself would blur the window, which closes the list at once. */}
+        <FrameFocusGuard />
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   );
 }
 
+/** One option. */
 function SelectItem({ className, children, ...props }: Props<typeof SelectPrimitive.Item>) {
   return (
     <SelectPrimitive.Item
@@ -117,7 +142,9 @@ function SelectItem({ className, children, ...props }: Props<typeof SelectPrimit
       className={cn(
         SELECT_ITEM_CLASS,
         SELECT_ITEM_TEXT_CLASS,
-        "focus:bg-accent focus:text-accent-foreground relative flex cursor-default select-none outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        // The chosen option is the chosen tint, a step further when highlighted: radix highlights
+        // the option under the pointer by focusing it.
+        "focus:bg-hover focus:text-foreground data-[state=checked]:bg-active/40 data-[state=checked]:focus:bg-active/60 relative flex cursor-default select-none outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
     >
@@ -131,6 +158,7 @@ function SelectItem({ className, children, ...props }: Props<typeof SelectPrimit
   );
 }
 
+/** The heading over a group of options. */
 function SelectLabel({ className, ...props }: Props<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
@@ -141,6 +169,7 @@ function SelectLabel({ className, ...props }: Props<typeof SelectPrimitive.Label
   );
 }
 
+/** A rule between groups of options. */
 function SelectSeparator({ className, ...props }: Props<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
@@ -151,6 +180,7 @@ function SelectSeparator({ className, ...props }: Props<typeof SelectPrimitive.S
   );
 }
 
+/** The arrow shown at the top of a list that has scrolled. */
 function SelectScrollUpButton({
   className,
   ...props
@@ -166,6 +196,7 @@ function SelectScrollUpButton({
   );
 }
 
+/** The arrow shown at the bottom of a list with more below. */
 function SelectScrollDownButton({
   className,
   ...props
