@@ -94,7 +94,9 @@ export default function App() {
         <PageLayout
           title="Music writing cheatsheet"
           description="Pick a key. The scale, its intervals, its modes, its chords and the progressions people build out of them all follow from it."
-          actionSlot={<ThemePicker />}
+          // Compact, because the header is pinned: three tiles are for a settings page, and here they
+          // would hold a fifth of a phone screen for the whole visit.
+          actionSlot={<ThemePicker variant="compact" />}
           headerContentSlot={
             <TabsList aria-label="Cheatsheet view">
               <TabsTrigger value="scales">Scale &amp; chords</TabsTrigger>
