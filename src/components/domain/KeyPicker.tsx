@@ -1,4 +1,4 @@
-import { OptionSelect } from '@/components/option-select';
+import { Combobox } from '@/components/combobox';
 import { SegmentedButton, SegmentedGroup } from '@/components/ui/segmented';
 import { SwitchField } from '@/components/ui/switch-field';
 import type { ScaleFamily, Tonic } from '@/lib/music';
@@ -32,7 +32,7 @@ export function KeyPicker({
   return (
     <div className="flex flex-wrap items-end gap-x-8 gap-y-5 rounded-lg border border-border bg-card p-4">
       <Field label="Key" className="min-w-44">
-        <OptionSelect
+        <Combobox
           className="w-28"
           value={tonic.id}
           onValueChange={onTonicChange}
@@ -41,7 +41,7 @@ export function KeyPicker({
       </Field>
 
       <Field label="Scale" className="min-w-44">
-        <OptionSelect
+        <Combobox
           className="w-52"
           value={family.id}
           onValueChange={onFamilyChange}

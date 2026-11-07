@@ -1,5 +1,4 @@
-import { ActionButton } from '@/components/action-button';
-import { OptionSelect } from '@/components/option-select';
+import { Combobox } from '@/components/combobox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ChevronDown, ChevronUp, Copy, Trash2, Undo2, X } from '@/components/ui/icons';
@@ -106,7 +105,7 @@ export function FlowRoute({
             the second, so the number sits beside the menu rather than in it — a menu offering
             "Verse 2" would be offering something reordering the song takes straight back. */}
         <div className="flex items-center gap-1.5">
-          <OptionSelect
+          <Combobox
             className="w-36"
             value={label}
             onValueChange={(next) => onLabelChange(next as SectionLabel)}
@@ -118,9 +117,13 @@ export function FlowRoute({
         {active ? (
           <Badge>adding here</Badge>
         ) : (
-          <Button size="xs" variant="outline" onClick={onActivate} title={`Add the next chord to ${name}`}>
-            Add here
-          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={onActivate}
+            content="Add here"
+            hint={`Add the next chord to ${name}`}
+          />
         )}
 
         <span className="text-muted-foreground text-sm">
@@ -213,14 +216,15 @@ export function FlowRoute({
 }
 
 /**
- * One of the row of small square buttons a section carries: this app's size for @cubeui's
- * `ActionButton`, said once instead of at seven call sites.
+ * One of the row of small square buttons a section carries: this app's size and variants for
+ * @cubeui's `Button`, said once instead of at seven call sites.
  *
  * Icon-only because there are seven of them and a section header is not where a song should
  * spend its width; the label names the section too, since "Move later" on its own means nothing
- * when there are four of them on the page. `ActionButton` is what makes the disabled ones worth
- * having: it marks them `aria-disabled` rather than `disabled`, so the button that refuses to
- * move a section still takes a hover and can say it is already first.
+ * when there are four of them on the page. The `hint` is what makes the disabled ones worth
+ * having: with one, `Button` marks them `aria-disabled` rather than `disabled`, so the button that
+ * refuses to move a section still takes a hover and can say it is already first. The ones with
+ * nothing to explain draw no tooltip, as cubeui's icon buttons do not.
  */
 function IconButton({
   icon: Icon,
@@ -238,16 +242,15 @@ function IconButton({
   destructive?: boolean;
 }) {
   return (
-    <ActionButton
-      size="xs"
+    <Button
+      size="icon-xs"
       variant={destructive ? 'destructive-outline' : 'outline'}
       onClick={onClick}
       disabled={disabled}
-      label={label}
+      aria-label={label}
       {...(hint === undefined ? {} : { hint })}
-      className="w-7 shrink-0 px-0"
-    >
-      <Icon className="h-3 w-3" />
-    </ActionButton>
+      className="shrink-0"
+      iconSlot={<Icon />}
+    />
   );
 }

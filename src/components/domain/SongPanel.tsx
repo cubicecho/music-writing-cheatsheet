@@ -1,4 +1,4 @@
-import { OptionSelect } from '@/components/option-select';
+import { Combobox } from '@/components/combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from '@/components/ui/icons';
@@ -86,7 +86,7 @@ export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }
 
         <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <Field label="Chord length">
-            <OptionSelect
+            <Combobox
               className="w-36"
               value={String(song.beats)}
               onValueChange={(next) => onChange({ ...song, beats: Number(next) })}
@@ -95,7 +95,7 @@ export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }
           </Field>
 
           <Field label="Tempo">
-            <OptionSelect
+            <Combobox
               className="w-32"
               value={String(song.bpm)}
               onValueChange={(next) => onChange({ ...song, bpm: Number(next) })}
@@ -139,10 +139,14 @@ export function SongPanel({ tonic, tonicLabel, family, seventh, song, onChange }
         ))}
 
         <div>
-          <Button size="xs" variant="outline" onClick={() => onChange(addSection(song))} title="Add a section">
-            <Plus className="h-3 w-3" />
-            Add section
-          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={() => onChange(addSection(song))}
+            iconSlot={<Plus />}
+            content="Add section"
+            hint="Add a section"
+          />
         </div>
       </CardContent>
     </Card>

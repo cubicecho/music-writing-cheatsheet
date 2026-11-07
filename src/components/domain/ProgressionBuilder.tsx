@@ -98,10 +98,14 @@ export function ProgressionBuilder({
                 label={playing ? 'Stop' : 'Play'}
                 title={`${playing ? 'Stop' : 'Play'} your progression in ${tonicLabel}`}
               />
-              <Button size="xs" variant="destructive-outline" onClick={onClear} title="Start again">
-                <X className="h-3 w-3" />
-                Clear
-              </Button>
+              <Button
+                size="xs"
+                variant="destructive-outline"
+                onClick={onClear}
+                iconSlot={<X />}
+                content="Clear"
+                hint="Start again"
+              />
             </>
           ) : null}
         </div>

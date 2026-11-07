@@ -387,10 +387,9 @@ export function FlowChart({ tonic, tonicLabel, family, seventh, from, onPick }: 
                       size="xs"
                       variant={move.strength === 'strong' ? 'default' : 'outline'}
                       onClick={() => onPick(move.to)}
-                      title={`Add ${target.chord.symbol}`}
-                    >
-                      {`${target.chord.numeral} · ${target.chord.symbol}`}
-                    </Button>
+                      content={`${target.chord.numeral} · ${target.chord.symbol}`}
+                      hint={`Add ${target.chord.symbol}`}
+                    />
                     <span className="flex-1 text-muted-foreground text-sm">{move.note}</span>
                   </li>
                 );

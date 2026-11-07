@@ -51,11 +51,10 @@ export function RhythmPanel({ rhythm }: { rhythm: Rhythm }) {
             size="xs"
             variant="outline"
             onClick={() => downloadMidi(rhythm)}
-            title={`Download ${PHRASE_BARS} bars of ${rhythm.name} as a MIDI file`}
-          >
-            <Download className="h-3 w-3" />
-            MIDI
-          </Button>
+            iconSlot={<Download />}
+            content="MIDI"
+            hint={`Download ${PHRASE_BARS} bars of ${rhythm.name} as a MIDI file`}
+          />
         </div>
         <span className="text-muted-foreground text-sm">{rhythm.description}</span>
       </CardHeader>
