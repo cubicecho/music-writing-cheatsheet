@@ -1,10 +1,11 @@
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { CardLayout } from '@/components/card-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToggleChip } from '@/components/ui/toggle-chip';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { FlowChord, FlowMove, MoveStrength, Note, ScaleFamily } from '@/lib/music';
 import { FLOW_ROLES, realizeFlow } from '@/lib/music';
+import { PanelTitle } from './PanelTitle';
 
 type FlowChartProps = {
   tonic: Note;
@@ -270,134 +271,129 @@ export function FlowChart({ tonic, tonicLabel, family, seventh, from, onPick }: 
     .sort((left, right) => Number(left.lit) - Number(right.lit));
 
   return (
-    <Card>
-      <CardHeader className="gap-2 pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle className="text-xl">The chord map</CardTitle>
-          <span className="text-muted-foreground text-sm">
-            in {tonicLabel} {family.name.toLowerCase()}
-          </span>
-        </div>
-        <span className="text-muted-foreground text-sm">
-          {standing
-            ? `You are on ${standing.chord.symbol}. Its arrows are lit; the dimmed chords are the ones the chart does not draw one to — still playable, just not what most songs do next.`
-            : 'Click a chord to start. Most things start at home, on the left; the chart will then light up where that chord usually goes.'}
-        </span>
-      </CardHeader>
-
-      <CardContent className="gap-5">
-        <div
-          ref={containerRef}
-          className="relative grid grid-cols-3 grid-rows-[auto_1fr] gap-x-2 gap-y-4 py-2 sm:gap-x-8 md:gap-x-14 md:gap-y-10"
-        >
-          {geometry.width > 0 ? (
-            <svg
-              className="pointer-events-none absolute inset-0 overflow-visible"
-              width={geometry.width}
-              height={geometry.height}
-              viewBox={`0 0 ${geometry.width} ${geometry.height}`}
-              aria-hidden
-            >
-              {edges.map((edge) => {
-                const tail = geometry.boxes.get(edge.from);
-                const head = geometry.boxes.get(edge.to);
-                if (!tail || !head) return null;
-
-                const { d, tip, control } = edgeShape(tail, head);
-                const opacity = edge.lit ? 1 : standing ? 0.1 : edge.strength === 'strong' ? 0.45 : 0.25;
-                return (
-                  <g key={edge.key} className={edge.lit ? 'text-primary' : 'text-muted-foreground'} opacity={opacity}>
-                    <path
-                      d={d}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={STROKE_WIDTH[edge.strength]}
-                      strokeDasharray={DASH[edge.strength]}
-                      strokeLinecap="round"
-                    />
-                    <polygon points={arrowHead(tip, control)} fill="currentColor" />
-                  </g>
-                );
-              })}
-            </svg>
-          ) : null}
-
-          {columns.map((column, index) => (
-            <Fragment key={column.role}>
-              <div className={`relative row-start-1 flex flex-col gap-0.5 ${COLUMN_CLASS[index]}`}>
-                <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
-                  {column.label}
-                </span>
-                {/* The first thing to go when there is no room for it: on a phone the chart itself
-                    has to fit across three columns, and a chord's tooltip says the same thing. */}
-                <span className="hidden text-muted-foreground text-xs md:block">{column.hint}</span>
-              </div>
-              <div
-                className={`relative row-start-2 flex flex-col items-center gap-6 md:gap-11 ${COLUMN_CLASS[index]} ${COLUMN_OFFSET[index]}`}
+    <CardLayout
+      title={<PanelTitle title="The chord map" meta={`in ${tonicLabel} ${family.name.toLowerCase()}`} />}
+      description={
+        standing
+          ? `You are on ${standing.chord.symbol}. Its arrows are lit; the dimmed chords are the ones the chart does not draw one to — still playable, just not what most songs do next.`
+          : 'Click a chord to start. Most things start at home, on the left; the chart will then light up where that chord usually goes.'
+      }
+      contentClassName="gap-5"
+      contentSlot={
+        <>
+          <div
+            ref={containerRef}
+            className="relative grid grid-cols-3 grid-rows-[auto_1fr] gap-x-2 gap-y-4 py-2 sm:gap-x-8 md:gap-x-14 md:gap-y-10"
+          >
+            {geometry.width > 0 ? (
+              <svg
+                className="pointer-events-none absolute inset-0 overflow-visible"
+                width={geometry.width}
+                height={geometry.height}
+                viewBox={`0 0 ${geometry.width} ${geometry.height}`}
+                aria-hidden
               >
-                {column.entries.map((entry) => (
-                  // The ref goes on a wrapper of its own rather than on the tooltip's trigger:
-                  // what the arrows need to know is where the chip is, and that should not depend
-                  // on whether something else is also holding a ref to it.
-                  <div key={entry.node.degree} ref={register(entry.node.degree)} className="inline-flex">
-                    <ChartChip
-                      entry={entry}
-                      current={entry.node.degree === from}
-                      move={moves.get(entry.node.degree)}
-                      standing={standing !== undefined}
-                      onPick={onPick}
-                    />
-                  </div>
-                ))}
-              </div>
-            </Fragment>
-          ))}
-        </div>
+                {edges.map((edge) => {
+                  const tail = geometry.boxes.get(edge.from);
+                  const head = geometry.boxes.get(edge.to);
+                  if (!tail || !head) return null;
 
-        <ul className="flex list-none flex-wrap items-center gap-x-5 gap-y-2 p-0 text-muted-foreground text-xs">
-          {LEGEND.map(({ strength, label }) => (
-            <li key={strength} className="flex items-center gap-2">
-              <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden className="shrink-0">
-                <path
-                  d="M 0 4 H 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={STROKE_WIDTH[strength]}
-                  strokeDasharray={DASH[strength]}
-                  strokeLinecap="round"
-                />
-                <polygon points="26,4 19,7 19,1" fill="currentColor" />
+                  const { d, tip, control } = edgeShape(tail, head);
+                  const opacity = edge.lit ? 1 : standing ? 0.1 : edge.strength === 'strong' ? 0.45 : 0.25;
+                  return (
+                    <g key={edge.key} className={edge.lit ? 'text-primary' : 'text-muted-foreground'} opacity={opacity}>
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={STROKE_WIDTH[edge.strength]}
+                        strokeDasharray={DASH[edge.strength]}
+                        strokeLinecap="round"
+                      />
+                      <polygon points={arrowHead(tip, control)} fill="currentColor" />
+                    </g>
+                  );
+                })}
               </svg>
-              {label}
-            </li>
-          ))}
-          <li>A cadence is an arrow coming back to the left.</li>
-        </ul>
+            ) : null}
 
-        {standing ? (
-          <div className="flex flex-col gap-2 border-border border-t pt-4">
-            <span className="text-foreground text-sm">From {standing.chord.symbol}, the chart goes:</span>
-            <ul className="flex list-none flex-col gap-2 p-0">
-              {standing.node.moves.map((move) => {
-                const target = chordFor(move.to);
-                if (!target) return null;
-                return (
-                  <li key={move.to} className="flex flex-wrap items-baseline gap-2">
-                    <Button
-                      size="xs"
-                      variant={move.strength === 'strong' ? 'default' : 'outline'}
-                      onClick={() => onPick(move.to)}
-                      content={`${target.chord.numeral} · ${target.chord.symbol}`}
-                      hint={`Add ${target.chord.symbol}`}
-                    />
-                    <span className="flex-1 text-muted-foreground text-sm">{move.note}</span>
-                  </li>
-                );
-              })}
-            </ul>
+            {columns.map((column, index) => (
+              <Fragment key={column.role}>
+                <div className={`relative row-start-1 flex flex-col gap-0.5 ${COLUMN_CLASS[index]}`}>
+                  <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                    {column.label}
+                  </span>
+                  {/* The first thing to go when there is no room for it: on a phone the chart itself
+                    has to fit across three columns, and a chord's tooltip says the same thing. */}
+                  <span className="hidden text-muted-foreground text-xs md:block">{column.hint}</span>
+                </div>
+                <div
+                  className={`relative row-start-2 flex flex-col items-center gap-6 md:gap-11 ${COLUMN_CLASS[index]} ${COLUMN_OFFSET[index]}`}
+                >
+                  {column.entries.map((entry) => (
+                    // The ref goes on a wrapper of its own rather than on the tooltip's trigger:
+                    // what the arrows need to know is where the chip is, and that should not depend
+                    // on whether something else is also holding a ref to it.
+                    <div key={entry.node.degree} ref={register(entry.node.degree)} className="inline-flex">
+                      <ChartChip
+                        entry={entry}
+                        current={entry.node.degree === from}
+                        move={moves.get(entry.node.degree)}
+                        standing={standing !== undefined}
+                        onPick={onPick}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Fragment>
+            ))}
           </div>
-        ) : null}
-      </CardContent>
-    </Card>
+
+          <ul className="flex list-none flex-wrap items-center gap-x-5 gap-y-2 p-0 text-muted-foreground text-xs">
+            {LEGEND.map(({ strength, label }) => (
+              <li key={strength} className="flex items-center gap-2">
+                <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden className="shrink-0">
+                  <path
+                    d="M 0 4 H 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={STROKE_WIDTH[strength]}
+                    strokeDasharray={DASH[strength]}
+                    strokeLinecap="round"
+                  />
+                  <polygon points="26,4 19,7 19,1" fill="currentColor" />
+                </svg>
+                {label}
+              </li>
+            ))}
+            <li>A cadence is an arrow coming back to the left.</li>
+          </ul>
+
+          {standing ? (
+            <div className="flex flex-col gap-2 border-border border-t pt-4">
+              <span className="text-foreground text-sm">From {standing.chord.symbol}, the chart goes:</span>
+              <ul className="flex list-none flex-col gap-2 p-0">
+                {standing.node.moves.map((move) => {
+                  const target = chordFor(move.to);
+                  if (!target) return null;
+                  return (
+                    <li key={move.to} className="flex flex-wrap items-baseline gap-2">
+                      <Button
+                        size="xs"
+                        variant={move.strength === 'strong' ? 'default' : 'outline'}
+                        onClick={() => onPick(move.to)}
+                        content={`${target.chord.numeral} · ${target.chord.symbol}`}
+                        hint={`Add ${target.chord.symbol}`}
+                      />
+                      <span className="flex-1 text-muted-foreground text-sm">{move.note}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+        </>
+      }
+    />
   );
 }
