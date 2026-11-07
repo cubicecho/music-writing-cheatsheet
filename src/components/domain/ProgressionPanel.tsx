@@ -1,8 +1,9 @@
+import { CardLayout } from '@/components/card-layout';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Note, Progression, ScaleFamily } from '@/lib/music';
 import { realizeProgression } from '@/lib/music';
 import { ChordBlock } from './ChordBlock';
+import { PanelTitle } from './PanelTitle';
 import { PlayButton } from './PlayButton';
 import { useSequence } from './useSequence';
 
@@ -28,13 +29,11 @@ export function ProgressionPanel({ progression, tonic, tonicLabel, family, seven
   const { playing, step, toggle } = useSequence(chords.map((entry) => entry.chord));
 
   return (
-    <Card>
-      <CardHeader className="gap-2 pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle className="text-xl">{progression.name}</CardTitle>
-          <span className="text-muted-foreground text-sm">
-            in {tonicLabel} {family.name.toLowerCase()}
-          </span>
+    <CardLayout
+      title={<PanelTitle title={progression.name} meta={`in ${tonicLabel} ${family.name.toLowerCase()}`} />}
+      description={progression.description}
+      actionSlot={
+        <>
           {native ? null : <Badge variant="outline">transplanted</Badge>}
           <PlayButton
             playing={playing}
@@ -42,40 +41,41 @@ export function ProgressionPanel({ progression, tonic, tonicLabel, family, seven
             label={playing ? 'Stop' : 'Play'}
             title={`${playing ? 'Stop' : 'Play'} ${progression.name} in ${tonicLabel}`}
           />
-        </div>
-        <span className="text-muted-foreground text-sm">{progression.description}</span>
-      </CardHeader>
-      <CardContent className="gap-4">
-        <div className="flex flex-wrap gap-2">
-          {chords.map(({ id, position, ...entry }) => (
-            <ChordBlock key={id} {...entry} active={step === position} />
-          ))}
-        </div>
+        </>
+      }
+      contentSlot={
+        <>
+          <div className="flex flex-wrap gap-2">
+            {chords.map(({ id, position, ...entry }) => (
+              <ChordBlock key={id} {...entry} active={step === position} />
+            ))}
+          </div>
 
-        {borrowed.length > 0 ? (
-          <p className="text-muted-foreground text-sm">
-            <span className="text-foreground">
-              {borrowed.map((entry) => entry.chord.symbol).join(', ')} {borrowed.length === 1 ? 'is' : 'are'} not in{' '}
-              {tonicLabel} {family.name.toLowerCase()}.
-            </span>{' '}
-            Borrowed from {borrowed[0]!.borrowedFrom!.name.toLowerCase()} on the same root — the dashed outline marks
-            it. That is modal interchange, and it is most of what makes a progression sound like more than its scale.
-          </p>
-        ) : null}
+          {borrowed.length > 0 ? (
+            <p className="text-muted-foreground text-sm">
+              <span className="text-foreground">
+                {borrowed.map((entry) => entry.chord.symbol).join(', ')} {borrowed.length === 1 ? 'is' : 'are'} not in{' '}
+                {tonicLabel} {family.name.toLowerCase()}.
+              </span>{' '}
+              Borrowed from {borrowed[0]!.borrowedFrom!.name.toLowerCase()} on the same root — the dashed outline marks
+              it. That is modal interchange, and it is most of what makes a progression sound like more than its scale.
+            </p>
+          ) : null}
 
-        {native ? null : (
-          <p className="text-muted-foreground text-sm">
-            This shape belongs to {progression.families.map((id) => id.replace(/-/g, ' ')).join(' and ')}. The degrees
-            are the same here; {family.name.toLowerCase()} just answers them with its own chords.
-          </p>
-        )}
+          {native ? null : (
+            <p className="text-muted-foreground text-sm">
+              This shape belongs to {progression.families.map((id) => id.replace(/-/g, ' ')).join(' and ')}. The degrees
+              are the same here; {family.name.toLowerCase()} just answers them with its own chords.
+            </p>
+          )}
 
-        {progression.heardIn ? (
-          <p className="text-muted-foreground text-sm">
-            <span className="text-foreground">Heard in</span> {progression.heardIn}.
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+          {progression.heardIn ? (
+            <p className="text-muted-foreground text-sm">
+              <span className="text-foreground">Heard in</span> {progression.heardIn}.
+            </p>
+          ) : null}
+        </>
+      }
+    />
   );
 }

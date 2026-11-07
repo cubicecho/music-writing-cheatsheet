@@ -65,14 +65,20 @@
       "!cubeui-tokens.css",
       "!cubeui-reset.css",
       "!src/components/ui",
-      "!src/components/action-button.tsx",
-      "!src/components/option-select.tsx",
-      "!src/components/page.tsx",
+      "!src/components/card-layout.tsx",
+      "!src/components/combobox.tsx",
+      "!src/components/empty-state.tsx",
+      "!src/components/header-content-footer.tsx",
+      "!src/components/list.tsx",
       "!src/components/page-header.tsx",
+      "!src/components/page-layout.tsx",
       "!src/components/section-heading.tsx",
       "!src/components/section.tsx",
       "!src/lib/utils.ts",
-      "!src/lib/color.ts"
+      "!src/lib/color.ts",
+      "!src/lib/frame-focus-guard.ts",
+      "!src/lib/readable-text-color.ts",
+      "!src/lib/select-options.ts"
     ]
   },
   "overrides": [

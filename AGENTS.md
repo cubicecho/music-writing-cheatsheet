@@ -37,6 +37,7 @@ music-writing-cheatsheet/
 │   ├── index.css             # tailwind → tokens → the RN reset, in that order
 │   ├── components/
 │   │   ├── domain/           # the app's own components
+│   │   │   ├── PanelTitle.tsx         # a card's title with its key or meter beside it, muted
 │   │   │   ├── ScalesTab.tsx          # tab 1: the scale, its modes, its chords
 │   │   │   ├── ProgressionsTab.tsx    # tab 2: the same key, read as progressions
 │   │   │   ├── FlowTab.tsx            # tab 3: the same key, read as a map you walk
@@ -63,10 +64,11 @@ music-writing-cheatsheet/
 │   │   │   ├── PlayButton.tsx         # play/stop
 │   │   │   └── useSequence.ts         # playing a chord list, and which one is sounding
 │   │   ├── ui/               # INSTALLED from @cubeui — do not edit by hand
-│   │   ├── action-button.tsx # INSTALLED (@cubeui/action-button)
-│   │   ├── option-select.tsx # INSTALLED (@cubeui/option-select)
-│   │   ├── page.tsx          # INSTALLED (@cubeui/page)
+│   │   ├── card-layout.tsx   # INSTALLED (@cubeui/card-layout): every panel on the page
+│   │   ├── combobox.tsx      # INSTALLED (@cubeui/combobox): every select on the page
+│   │   ├── page-layout.tsx   # INSTALLED (@cubeui/page-layout): the page, title pinned over the tabs
 │   │   ├── page-header.tsx   # INSTALLED (@cubeui/page-header)
+│   │   ├── empty-state.tsx, header-content-footer.tsx, list.tsx  # INSTALLED, page-layout's own
 │   │   ├── section-heading.tsx  # INSTALLED (@cubeui/section-heading)
 │   │   └── section.tsx       # INSTALLED (@cubeui/section)
 │   ├── lib/
@@ -357,16 +359,39 @@ so C major, F♯ harmonic minor and the 7ths switch are three different layouts
 of the same graph; measuring is what makes all three right, and the geometry is
 stamped with the labels it was taken for so a stale measurement is never drawn.
 
+### The November 2026 reinstall
+
+cubeui's layout refactor retired three of the items this app had, and every
+item was reinstalled from the published registry:
+
+- `@cubeui/page` is gone. `App` is a `PageLayout`: the title and the tab list
+  (in `headerContentSlot`, with the one `Tabs` root around the page) stay
+  pinned while the panel scrolls under them. That is why the header's
+  `ThemePicker` is the `compact` variant now — the three tiles are for a
+  settings page, and pinned they held a fifth of a phone screen.
+- `@cubeui/action-button` folded into `Button`. An icon-only button is `Button`
+  at `icon-xs` with `aria-label` and `iconSlot`, and the reasons above (*already
+  first*, *the whole song is playing*) are its `hint`, which still turns
+  `disabled` into `aria-disabled`. A button with no `hint` draws no tooltip, so
+  the icon buttons with nothing to explain no longer repeat their name on
+  hover. `Button` takes no children either: `content`, `iconSlot`,
+  `trailingSlot`.
+- `@cubeui/option-select` folded into `Combobox`, same `options` array.
+- The panels were `Card` + `CardHeader` + `CardTitle` assembled by hand; they
+  are `CardLayout`, and `PanelTitle` puts the key or meter beside the title.
+- Chosen things — tabs, segments, chips, the theme picker — are tinted
+  (`bg-active/40`) rather than filled.
+
 Nothing on the page is a hand-rolled version of something the registry ships:
-`PlayButton` and `FlowRoute`'s icon row are `@cubeui/action-button`, the
+`PlayButton` and `FlowRoute`'s icon row are `@cubeui/button`, the
 relative/parallel key links and both sketchpads' *Clear* are `@cubeui/button`
 with a variant, the key picker's *Show modes as* pills are `@cubeui/segmented`'s
 `SegmentedGroup` and its 7ths toggle is `@cubeui/switch-field` (cubicecho/cubeui
 #104 and #105 were filed from here), and the `<button>`s that remain are the ones the registry has
 no item for — `ChordBlock`'s chord face and its floating remove ×,
 `NoteStrip`'s note, octave and step tiles, `ChordTable`'s chord-tone chips.
-Those are data tiles rather than controls, and `Button` wraps a bare string
-child and cannot be a three-line tile. Reach for a registry item first; write a
+Those are data tiles rather than controls, and `Button`'s label is one line
+and cannot be a three-line tile. Reach for a registry item first; write a
 `<button>` only when what you are making is not a control the set has.
 
 Installed files are **excluded from Biome** (`biome.json` → `files.includes`)

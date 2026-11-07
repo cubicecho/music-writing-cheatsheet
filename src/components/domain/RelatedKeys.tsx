@@ -14,12 +14,15 @@ function Link({ related, onSelect }: { related: RelatedKey; onSelect: (tonicId: 
   if (!target) return null;
 
   return (
-    <Button variant="outline" size="xs" onClick={() => onSelect(target.id, related.family.id)}>
-      {/* One string, not two and a space: Button colours a bare string child by wrapping it, and
-          three children would be three wrappers with the gap of the button's own row between. */}
-      {`${formatNote(related.tonic)} ${related.family.name.toLowerCase()}`}
-      <ArrowRight />
-    </Button>
+    <Button
+      variant="outline"
+      size="xs"
+      onClick={() => onSelect(target.id, related.family.id)}
+      // One string, not two and a space: Button draws a string label in the variant's ink, and
+      // anything else is rendered as it is.
+      content={`${formatNote(related.tonic)} ${related.family.name.toLowerCase()}`}
+      trailingSlot={<ArrowRight />}
+    />
   );
 }
 

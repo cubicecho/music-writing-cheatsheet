@@ -1,10 +1,11 @@
+import { CardLayout } from '@/components/card-layout';
 import { SectionHeading } from '@/components/section-heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download } from '@/components/ui/icons';
 import type { Rhythm } from '@/lib/rhythm';
 import { INSTRUMENT_ORDER, INSTRUMENTS, PHRASE_BARS, rhythmToMidi, STYLES, tempoMark } from '@/lib/rhythm';
+import { PanelTitle } from './PanelTitle';
 import { PlayButton } from './PlayButton';
 import { RhythmGrid } from './RhythmGrid';
 import { RhythmStaff } from './RhythmStaff';
@@ -32,14 +33,16 @@ export function RhythmPanel({ rhythm }: { rhythm: Rhythm }) {
   const played = INSTRUMENT_ORDER.filter((instrument) => rhythm.voices[instrument] !== undefined);
 
   return (
-    <Card>
-      <CardHeader className="gap-2 pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle className="text-xl">{rhythm.name}</CardTitle>
-          <span className="text-muted-foreground text-sm">
-            {rhythm.meter} · {tempoMark(rhythm)}
-            {rhythm.swing ? ' · swung' : null}
-          </span>
+    <CardLayout
+      title={
+        <PanelTitle
+          title={rhythm.name}
+          meta={`${rhythm.meter} · ${tempoMark(rhythm)}${rhythm.swing ? ' · swung' : ''}`}
+        />
+      }
+      description={rhythm.description}
+      actionSlot={
+        <>
           <Badge variant="outline">{style.name}</Badge>
           <PlayButton
             playing={playing}
@@ -51,37 +54,37 @@ export function RhythmPanel({ rhythm }: { rhythm: Rhythm }) {
             size="xs"
             variant="outline"
             onClick={() => downloadMidi(rhythm)}
-            title={`Download ${PHRASE_BARS} bars of ${rhythm.name} as a MIDI file`}
-          >
-            <Download className="h-3 w-3" />
-            MIDI
-          </Button>
-        </div>
-        <span className="text-muted-foreground text-sm">{rhythm.description}</span>
-      </CardHeader>
+            iconSlot={<Download />}
+            content="MIDI"
+            hint={`Download ${PHRASE_BARS} bars of ${rhythm.name} as a MIDI file`}
+          />
+        </>
+      }
+      contentClassName="gap-5"
+      contentSlot={
+        <>
+          <div className="flex flex-col gap-2">
+            <SectionHeading variant="overline">On the staff</SectionHeading>
+            <RhythmStaff rhythm={rhythm} activeStep={step} />
+            <p className="text-muted-foreground text-xs">
+              {played
+                .map((instrument) => `${INSTRUMENTS[instrument].name}: ${INSTRUMENTS[instrument].where}`)
+                .join(' · ')}
+            </p>
+          </div>
 
-      <CardContent className="gap-5">
-        <div className="flex flex-col gap-2">
-          <SectionHeading variant="overline">On the staff</SectionHeading>
-          <RhythmStaff rhythm={rhythm} activeStep={step} />
-          <p className="text-muted-foreground text-xs">
-            {played
-              .map((instrument) => `${INSTRUMENTS[instrument].name}: ${INSTRUMENTS[instrument].where}`)
-              .join(' · ')}
-          </p>
-        </div>
+          <div className="flex flex-col gap-2">
+            <SectionHeading variant="overline">On a grid</SectionHeading>
+            <RhythmGrid rhythm={rhythm} activeStep={step} />
+          </div>
 
-        <div className="flex flex-col gap-2">
-          <SectionHeading variant="overline">On a grid</SectionHeading>
-          <RhythmGrid rhythm={rhythm} activeStep={step} />
-        </div>
-
-        {rhythm.heardIn ? (
-          <p className="text-muted-foreground text-sm">
-            <span className="text-foreground">Heard in</span> {rhythm.heardIn}.
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+          {rhythm.heardIn ? (
+            <p className="text-muted-foreground text-sm">
+              <span className="text-foreground">Heard in</span> {rhythm.heardIn}.
+            </p>
+          ) : null}
+        </>
+      }
+    />
   );
 }

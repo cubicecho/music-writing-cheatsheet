@@ -4,7 +4,7 @@ import type { ModeView } from '@/components/domain/KeyPicker';
 import { ProgressionsTab } from '@/components/domain/ProgressionsTab';
 import { RhythmsTab } from '@/components/domain/RhythmsTab';
 import { ScalesTab } from '@/components/domain/ScalesTab';
-import { Page, PageHeader } from '@/components/page';
+import { PageLayout } from '@/components/page-layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemePicker } from '@/components/ui/theme-picker';
 import { usePalettePreference, useThemePreference } from '@/components/ui/theme-preference';
@@ -87,56 +87,63 @@ export default function App() {
 
   return (
     <TooltipProvider>
-      <Page className="max-w-5xl gap-6">
-        <PageHeader
+      {/* One set of tabs around the whole page: the list sits in the header, pinned with the title,
+          and the panels are the body that scrolls under it. Two roots sharing a value would leave
+          each panel unnamed by its tab. */}
+      <Tabs defaultValue="scales" className="h-full">
+        <PageLayout
           title="Music writing cheatsheet"
           description="Pick a key. The scale, its intervals, its modes, its chords and the progressions people build out of them all follow from it."
-          action={<ThemePicker />}
+          // Compact, because the header is pinned: three tiles are for a settings page, and here they
+          // would hold a fifth of a phone screen for the whole visit.
+          actionSlot={<ThemePicker variant="compact" />}
+          headerContentSlot={
+            <TabsList aria-label="Cheatsheet view">
+              <TabsTrigger value="scales">Scale &amp; chords</TabsTrigger>
+              <TabsTrigger value="progressions">Progressions</TabsTrigger>
+              <TabsTrigger value="map">Chord map</TabsTrigger>
+              <TabsTrigger value="rhythms">Rhythms</TabsTrigger>
+            </TabsList>
+          }
+          headerClassName="border-b border-foreground/10"
+          contentSlot={
+            <>
+              <TabsContent value="scales">
+                <ScalesTab
+                  {...shared}
+                  onSelectKey={goToKey}
+                  modeView={modeView}
+                  onModeViewChange={setModeView}
+                  modeId={modeId}
+                  onSelectMode={setModeId}
+                />
+              </TabsContent>
+              <TabsContent value="progressions">
+                <ProgressionsTab
+                  {...shared}
+                  progressionId={progressionId}
+                  onSelectProgression={setProgressionId}
+                  custom={custom}
+                  onAppendStep={(step) => setCustom((current) => [...current, step])}
+                  onRemoveStep={(position) => setCustom((current) => current.filter((_, index) => index !== position))}
+                  onClearCustom={() => setCustom([])}
+                />
+              </TabsContent>
+              <TabsContent value="map">
+                <FlowTab {...shared} song={song} onSongChange={setSong} />
+              </TabsContent>
+              <TabsContent value="rhythms">
+                <RhythmsTab rhythmId={rhythmId} onSelectRhythm={setRhythmId} />
+              </TabsContent>
+
+              <footer className="pt-2 pb-2 text-muted-foreground text-xs">
+                Built on {SCALE_FAMILIES.length} scale families × 7 modes, plus {GAPPED_FAMILIES.length} pentatonic and
+                blues scales. Every chord is thirds stacked out of the scale's own notes — nothing is a lookup table.
+              </footer>
+            </>
+          }
         />
-
-        <Tabs defaultValue="scales">
-          <TabsList aria-label="Cheatsheet view">
-            <TabsTrigger value="scales">Scale &amp; chords</TabsTrigger>
-            <TabsTrigger value="progressions">Progressions</TabsTrigger>
-            <TabsTrigger value="map">Chord map</TabsTrigger>
-            <TabsTrigger value="rhythms">Rhythms</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="scales" className="mt-6">
-            <ScalesTab
-              {...shared}
-              onSelectKey={goToKey}
-              modeView={modeView}
-              onModeViewChange={setModeView}
-              modeId={modeId}
-              onSelectMode={setModeId}
-            />
-          </TabsContent>
-
-          <TabsContent value="progressions" className="mt-6">
-            <ProgressionsTab
-              {...shared}
-              progressionId={progressionId}
-              onSelectProgression={setProgressionId}
-              custom={custom}
-              onAppendStep={(step) => setCustom((current) => [...current, step])}
-              onRemoveStep={(position) => setCustom((current) => current.filter((_, index) => index !== position))}
-              onClearCustom={() => setCustom([])}
-            />
-          </TabsContent>
-          <TabsContent value="map" className="mt-6">
-            <FlowTab {...shared} song={song} onSongChange={setSong} />
-          </TabsContent>
-          <TabsContent value="rhythms" className="mt-6">
-            <RhythmsTab rhythmId={rhythmId} onSelectRhythm={setRhythmId} />
-          </TabsContent>
-        </Tabs>
-
-        <footer className="pt-2 pb-6 text-muted-foreground text-xs">
-          Built on {SCALE_FAMILIES.length} scale families × 7 modes, plus {GAPPED_FAMILIES.length} pentatonic and blues
-          scales. Every chord is thirds stacked out of the scale's own notes — nothing is a lookup table.
-        </footer>
-      </Page>
+      </Tabs>
     </TooltipProvider>
   );
 }

@@ -1,11 +1,12 @@
+import { CardLayout } from '@/components/card-layout';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X } from '@/components/ui/icons';
 import { ToggleChip } from '@/components/ui/toggle-chip';
 import type { Note, PaletteEntry, ProgressionStep, ScaleFamily } from '@/lib/music';
 import { chordPalette, realizeSteps } from '@/lib/music';
 import { ChordBlock } from './ChordBlock';
+import { PanelTitle } from './PanelTitle';
 import { PlayButton } from './PlayButton';
 import { useSequence } from './useSequence';
 
@@ -83,55 +84,57 @@ export function ProgressionBuilder({
   const { playing, step: sounding, toggle } = useSequence(chords.map((entry) => entry.chord));
 
   return (
-    <Card>
-      <CardHeader className="gap-2 pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle className="text-xl">Build your own</CardTitle>
-          <span className="text-muted-foreground text-sm">
-            in {tonicLabel} {family.name.toLowerCase()}
-          </span>
-          {chords.length > 0 ? (
-            <>
-              <PlayButton
-                playing={playing}
-                onClick={toggle}
-                label={playing ? 'Stop' : 'Play'}
-                title={`${playing ? 'Stop' : 'Play'} your progression in ${tonicLabel}`}
-              />
-              <Button size="xs" variant="destructive-outline" onClick={onClear} title="Start again">
-                <X className="h-3 w-3" />
-                Clear
-              </Button>
-            </>
-          ) : null}
-        </div>
-      </CardHeader>
-      <CardContent className="gap-5">
-        {chords.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Nothing yet. Click chords below to add them — four is usually plenty.
-          </p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {chords.map(({ id, position, ...entry }) => (
-              <ChordBlock key={id} {...entry} active={sounding === position} onRemove={() => onRemove(position)} />
-            ))}
-          </div>
-        )}
+    <CardLayout
+      title={<PanelTitle title="Build your own" meta={`in ${tonicLabel} ${family.name.toLowerCase()}`} />}
+      actionSlot={
+        chords.length > 0 ? (
+          <>
+            <PlayButton
+              playing={playing}
+              onClick={toggle}
+              label={playing ? 'Stop' : 'Play'}
+              title={`${playing ? 'Stop' : 'Play'} your progression in ${tonicLabel}`}
+            />
+            <Button
+              size="xs"
+              variant="destructive-outline"
+              onClick={onClear}
+              iconSlot={<X />}
+              content="Clear"
+              hint="Start again"
+            />
+          </>
+        ) : null
+      }
+      contentClassName="gap-5"
+      contentSlot={
+        <>
+          {chords.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              Nothing yet. Click chords below to add them — four is usually plenty.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {chords.map(({ id, position, ...entry }) => (
+                <ChordBlock key={id} {...entry} active={sounding === position} onRemove={() => onRemove(position)} />
+              ))}
+            </div>
+          )}
 
-        <Palette
-          label={`In ${family.name.toLowerCase()}`}
-          hint="The seven chords the scale gives you. Any order works; some orders work better."
-          entries={native}
-          onAppend={onAppend}
-        />
-        <Palette
-          label="Borrowed"
-          hint="Chords on the same root from the other scale families. One of these in four is usually the moment a progression stops sounding ordinary."
-          entries={borrowed}
-          onAppend={onAppend}
-        />
-      </CardContent>
-    </Card>
+          <Palette
+            label={`In ${family.name.toLowerCase()}`}
+            hint="The seven chords the scale gives you. Any order works; some orders work better."
+            entries={native}
+            onAppend={onAppend}
+          />
+          <Palette
+            label="Borrowed"
+            hint="Chords on the same root from the other scale families. One of these in four is usually the moment a progression stops sounding ordinary."
+            entries={borrowed}
+            onAppend={onAppend}
+          />
+        </>
+      }
+    />
   );
 }
