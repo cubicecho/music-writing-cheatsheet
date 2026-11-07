@@ -91,10 +91,10 @@ Pushing to `main` builds and publishes `dist/` to GitHub Pages
 
 This app was the first consumer of [cubeui]'s **web** registry — the DOM half
 of the React Native component set, produced by its `rn2web` compiler. Every
-control on the page is an installed `@cubeui` item: `OptionSelect`,
-`ActionButton`, `SwitchField`, `Tooltip`, `ToggleChip`, `SegmentedGroup`, `Card`,
-`Badge`, `Button`, `Page`, `PageHeader`, `Section`, `SectionHeading`. Nothing
-is hand-written to stand in for one.
+control on the page is an installed `@cubeui` item: `PageLayout`, `CardLayout`,
+`Combobox`, `Button`, `SwitchField`, `Tooltip`, `ToggleChip`, `SegmentedGroup`,
+`Tabs`, `ThemePicker`, `Badge`, `SectionHeading`. Nothing is hand-written to
+stand in for one.
 
 Components install from the published registry:
 
