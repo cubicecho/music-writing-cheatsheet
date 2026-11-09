@@ -22,7 +22,10 @@
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    /* Off while the installed `src/lib/utils.ts` (cubeui) has an unused `touchTarget(drawn)`
+       parameter: it fails TS6133, and installed files are not edited here. Biome still flags
+       unused parameters in the app's own code. */
+    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true

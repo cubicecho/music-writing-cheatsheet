@@ -27,7 +27,7 @@ export function RhythmsTab({ rhythmId, onSelectRhythm }: RhythmsTabProps) {
       <div className="flex flex-col gap-5">
         {STYLES.map((style) => (
           <div key={style.id} className="flex flex-col gap-2">
-            <SectionHeading variant="overline">{style.name}</SectionHeading>
+            <SectionHeading variant="overline" title={style.name} />
             <div className="flex flex-wrap gap-2">
               {RHYTHMS.filter((rhythm) => rhythm.style === style.id).map((rhythm) => (
                 <ToggleChip

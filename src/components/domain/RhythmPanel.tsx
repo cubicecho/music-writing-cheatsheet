@@ -64,7 +64,7 @@ export function RhythmPanel({ rhythm }: { rhythm: Rhythm }) {
       contentSlot={
         <>
           <div className="flex flex-col gap-2">
-            <SectionHeading variant="overline">On the staff</SectionHeading>
+            <SectionHeading variant="overline" title="On the staff" />
             <RhythmStaff rhythm={rhythm} activeStep={step} />
             <p className="text-muted-foreground text-xs">
               {played
@@ -74,7 +74,7 @@ export function RhythmPanel({ rhythm }: { rhythm: Rhythm }) {
           </div>
 
           <div className="flex flex-col gap-2">
-            <SectionHeading variant="overline">On a grid</SectionHeading>
+            <SectionHeading variant="overline" title="On a grid" />
             <RhythmGrid rhythm={rhythm} activeStep={step} />
           </div>
 
