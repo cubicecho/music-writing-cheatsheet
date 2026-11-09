@@ -37,7 +37,7 @@ function Palette({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-1">
-        <SectionHeading variant="overline">{label}</SectionHeading>
+        <SectionHeading variant="overline" title={label} />
         <span className="text-muted-foreground text-sm">{hint}</span>
       </div>
       <div className="flex flex-wrap gap-2">

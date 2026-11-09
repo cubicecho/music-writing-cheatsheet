@@ -105,7 +105,7 @@ export function ScalesTab({
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <SectionHeading variant="overline">Modes</SectionHeading>
+          <SectionHeading variant="overline" title="Modes" />
           <span className="text-muted-foreground text-sm">
             {modeView === 'relative'
               ? `The same ${family.intervals.length === 7 ? 'seven' : family.intervals.length === 6 ? 'six' : 'five'} notes as ${tonic.label} ${family.name.toLowerCase()}, started somewhere else. Pick one to open it.`

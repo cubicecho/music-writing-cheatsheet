@@ -32,7 +32,7 @@ export function ScalePanel({ title, subtitle, scale, seventh, chords, chordNote 
           <NoteStrip scale={scale} />
           <IntervalBreakdown scale={scale} />
           <div className="flex flex-col gap-2">
-            <SectionHeading variant="overline">{seventh ? 'Seventh chords' : 'Triads'}</SectionHeading>
+            <SectionHeading variant="overline" title={seventh ? 'Seventh chords' : 'Triads'} />
             {chordNote ? <span className="text-muted-foreground text-sm">{chordNote}</span> : null}
             {chords.length > 0 ? <ChordTable chords={chords} /> : null}
           </div>

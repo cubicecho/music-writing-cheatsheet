@@ -34,7 +34,8 @@
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
         "noUnusedImports": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "error"
       },
       "style": {
         "useImportType": "error",
@@ -78,7 +79,8 @@
       "!src/lib/color.ts",
       "!src/lib/frame-focus-guard.ts",
       "!src/lib/readable-text-color.ts",
-      "!src/lib/select-options.ts"
+      "!src/lib/select-options.ts",
+      "!src/lib/roving-focus.ts"
     ]
   },
   "overrides": [
